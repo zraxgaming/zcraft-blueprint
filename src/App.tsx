@@ -6,14 +6,26 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import PlayPage from "./pages/PlayPage";
 import ForumsPage from "./pages/ForumsPage";
+import ForumThreadPage from "./pages/ForumThreadPage";
 import NewsPage from "./pages/NewsPage";
+import NewsArticlePage from "./pages/NewsArticlePage";
 import WikiPage from "./pages/WikiPage";
+import WikiArticlePage from "./pages/WikiArticlePage";
 import RulesPage from "./pages/RulesPage";
 import SupportPage from "./pages/SupportPage";
 import StatusPage from "./pages/StatusPage";
 import StorePage from "./pages/StorePage";
 import StaffPage from "./pages/StaffPage";
 import EventsPage from "./pages/EventsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ProfilePage from "./pages/ProfilePage";
+import SearchPage from "./pages/SearchPage";
+import AdminPage from "./pages/AdminPage";
+import MaintenancePage from "./pages/MaintenancePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,15 +40,26 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/play" element={<PlayPage />} />
           <Route path="/forums" element={<ForumsPage />} />
+          <Route path="/forums/:slug" element={<ForumThreadPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/news/:slug" element={<NewsArticlePage />} />
           <Route path="/wiki" element={<WikiPage />} />
+          <Route path="/wiki/:slug" element={<WikiArticlePage />} />
           <Route path="/rules" element={<RulesPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/status" element={<StatusPage />} />
           <Route path="/store" element={<StorePage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/events" element={<EventsPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
