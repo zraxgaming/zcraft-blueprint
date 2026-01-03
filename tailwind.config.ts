@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Orbitron', 'sans-serif'],
+        display: ['Rajdhani', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,12 +60,6 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
-        },
-        cyan: {
-          glow: "hsl(var(--cyan-glow))",
-        },
-        teal: {
-          deep: "hsl(var(--teal-deep))",
         },
         surface: {
           elevated: "hsl(var(--surface-elevated))",
