@@ -25,6 +25,12 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import AdminPage from "./pages/AdminPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminNewsPage from "./pages/admin/AdminNewsPage";
+import AdminForumsPage from "./pages/admin/AdminForumsPage";
+import AdminWikiPage from "./pages/admin/AdminWikiPage";
+import AdminEventsPage from "./pages/admin/AdminEventsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +65,12 @@ const App = () => (
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/news" element={<AdminNewsPage />} />
+          <Route path="/admin/forums" element={<AdminForumsPage />} />
+          <Route path="/admin/wiki" element={<AdminWikiPage />} />
+          <Route path="/admin/events" element={<AdminEventsPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

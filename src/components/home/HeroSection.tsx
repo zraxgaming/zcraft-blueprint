@@ -1,6 +1,7 @@
 import { Copy, Check, Play } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import zcraftLogo from "@/assets/zcraft-logo.png";
 
 export function HeroSection() {
   const [copied, setCopied] = useState(false);
@@ -25,17 +26,15 @@ export function HeroSection() {
           {/* Server Logo */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-orange-400 shadow-xl">
-                <span className="font-display text-5xl font-black text-white">Z</span>
-              </div>
-              <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-xl animate-pulse-glow -z-10" />
+              <img 
+                src={zcraftLogo} 
+                alt="ZCraft Network" 
+                className="h-16 w-auto object-contain drop-shadow-2xl"
+                style={{ filter: 'drop-shadow(0 8px 24px hsl(210 100% 50% / 0.3))' }}
+              />
+              <div className="absolute -inset-8 bg-primary/15 rounded-3xl blur-2xl animate-pulse-glow -z-10" />
             </div>
           </div>
-
-          {/* Title */}
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tight">
-            <span className="text-gradient">ZCRAFT</span>
-          </h1>
 
           {/* Tagline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto">
