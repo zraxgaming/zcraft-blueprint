@@ -13,7 +13,7 @@ export default function LoginPage() {
           <Card className="max-w-md mx-auto border-0 bg-card card-hover">
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-orange-400 shadow-lg">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-400 shadow-lg">
                   <span className="font-display text-2xl font-bold text-white">Z</span>
                 </div>
               </div>
