@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Moon, Sun, Copy, Check } from "lucide-react";
+import { Menu, X, Moon, Sun, Copy, Check, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -19,6 +20,7 @@ export function Navbar() {
   const [isDark, setIsDark] = useState(false);
   const [copied, setCopied] = useState(false);
   const location = useLocation();
+  const { user, userProfile, logout } = useAuth();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -89,12 +91,42 @@ export function Navbar() {
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
-              <Button variant="ghost" size="sm" className="h-8" asChild>
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button size="sm" className="btn-primary-gradient h-8" asChild>
-                <Link to="/register">Register</Link>
-              </Button>
+              
+              {user && userProfile ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-muted transition-colors text-sm"
+                  >
+                    {userProfile.avatar_url && (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt={userProfile.username}
+                        className="h-6 w-6 rounded-full"
+                      />
+                    )}
+                    <span>{userProfile.username}</span>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8"
+                    onClick={logout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" className="h-8" asChild>
+                    <Link to="/login">Login</Link>
+                  </Button>
+                  <Button size="sm" className="btn-primary-gradient h-8" asChild>
+                    <Link to="/register">Register</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -129,12 +161,36 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="pt-4 border-t flex gap-2">
-                <Button variant="outline" className="flex-1" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button className="flex-1 btn-primary-gradient" asChild>
-                  <Link to="/register">Register</Link>
-                </Button>
+                {user && userProfile ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsOpen(false)}
+                      className="flex-1 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-center text-sm"
+                    >
+                      {userProfile.username}
+                    </Link>
+                    <Button
+                      variant="destructive"
+                      className="flex-1"
+                      onClick={() => {
+                        logout();
+                        setIsOpen(false);
+                      }}
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="flex-1" asChild>
+                      <Link to="/login">Login</Link>
+                    </Button>
+                    <Button className="flex-1 btn-primary-gradient" asChild>
+                      <Link to="/register">Register</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

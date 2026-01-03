@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Newspaper, 
   Plus, 
@@ -7,7 +7,8 @@ import {
   Edit, 
   Trash2,
   Eye,
-  Calendar
+  Calendar,
+  Loader
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,20 +30,42 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { newsService } from "@/services/newsService";
+import { toast } from "@/components/ui/use-toast";
 
-const newsPosts = [
-  { id: 1, title: "Summer Event 2024 Announced!", status: "published", date: "2024-06-01", views: 2345, tag: "Event" },
-  { id: 2, title: "Server Update 1.20.4", status: "published", date: "2024-05-28", views: 1890, tag: "Update" },
-  { id: 3, title: "New Survival World Coming Soon", status: "draft", date: "2024-05-25", views: 0, tag: "Announcement" },
-  { id: 4, title: "Maintenance Scheduled for Saturday", status: "published", date: "2024-05-20", views: 3421, tag: "Maintenance" },
-  { id: 5, title: "Staff Applications Now Open", status: "published", date: "2024-05-15", views: 5678, tag: "Announcement" },
-];
+interface NewsPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  created_at: string;
+  tag: string;
+  status: string;
+}
 
 export default function AdminNewsPage() {
+  const [posts, setPosts] = useState<NewsPost[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredPosts = newsPosts.filter(post =>
+  useEffect(() => {
+    loadNews();
+  }, []);
+
+  const loadNews = async () => {
+    try {
+      const data = await newsService.getNews();
+      setPosts(data);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load news");
+      toast({ title: "Error", description: "Failed to load news posts" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -54,6 +77,24 @@ export default function AdminNewsPage() {
       default: return "bg-primary/10 text-primary";
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="News Management">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="News Management">
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="News Management">
@@ -129,57 +170,57 @@ export default function AdminNewsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {filteredPosts.map((post) => (
-                <div key={post.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Newspaper className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{post.title}</h3>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${getTagColor(post.tag)}`}>
-                          {post.tag}
-                        </span>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {post.date}
-                        </span>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {post.views.toLocaleString()} views
-                        </span>
+              {filteredPosts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No posts found</p>
+              ) : (
+                filteredPosts.map((post) => (
+                  <div key={post.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Newspaper className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{post.title}</h3>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTagColor(post.tag)}`}>
+                            {post.tag}
+                          </span>
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(post.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={post.status === "published" ? "default" : "secondary"}>
+                        {post.status}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={post.status === "published" ? "default" : "secondary"}>
-                      {post.status}
-                    </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1,61 +1,20 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { newsService } from "@/services/newsService";
+import { toast } from "@/components/ui/use-toast";
 
-const featuredPost = {
-  title: "Summer Event 2024: Ice Kingdom Adventure",
-  excerpt: "Explore the frozen realm, complete challenges, and earn exclusive rewards in our biggest event of the year!",
-  date: "December 28, 2024",
-  tag: "Event",
-  image: "❄️",
-};
-
-const posts = [
-  {
-    title: "Server Update v3.2.1 - Performance Improvements",
-    excerpt: "We've made significant optimizations to reduce lag and improve overall gameplay experience.",
-    date: "December 25, 2024",
-    tag: "Update",
-    image: "⚡",
-  },
-  {
-    title: "New Staff Applications Now Open",
-    excerpt: "Are you passionate about helping others? Join our moderation team!",
-    date: "December 20, 2024",
-    tag: "Announcement",
-    image: "📢",
-  },
-  {
-    title: "December Build Contest Winners",
-    excerpt: "Congratulations to all participants! Check out the amazing builds that won.",
-    date: "December 18, 2024",
-    tag: "Event",
-    image: "🏆",
-  },
-  {
-    title: "Scheduled Maintenance - December 15th",
-    excerpt: "Brief downtime expected for server upgrades. ETA: 2 hours.",
-    date: "December 14, 2024",
-    tag: "Maintenance",
-    image: "🔧",
-  },
-  {
-    title: "New Custom Enchantments System",
-    excerpt: "Discover over 50 new enchantments to enhance your gear and gameplay.",
-    date: "December 10, 2024",
-    tag: "Update",
-    image: "✨",
-  },
-  {
-    title: "Community Spotlight: Amazing Builds",
-    excerpt: "Featuring the most impressive player creations from this month.",
-    date: "December 5, 2024",
-    tag: "Community",
-    image: "🏠",
-  },
-];
+interface NewsPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  created_at: string;
+  tag: string;
+  image?: string;
+}
 
 const getTagColor = (tag: string) => {
   switch (tag) {
@@ -75,6 +34,37 @@ const getTagColor = (tag: string) => {
 };
 
 export default function NewsPage() {
+  const [posts, setPosts] = useState<NewsPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadNews();
+  }, []);
+
+  const loadNews = async () => {
+    try {
+      setLoading(true);
+      const data = await newsService.getNews();
+      setPosts(data);
+    } catch (err: any) {
+      console.error("Error loading news:", err);
+      setError(err?.message || "Failed to load news");
+      toast({ title: "Error", description: "Failed to load news posts" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const featuredPost = posts[0] || {
+    title: "No news yet",
+    excerpt: "Check back soon for updates!",
+    created_at: new Date().toISOString(),
+    tag: "News",
+  };
+
+  const otherPosts = posts.slice(1);
+  
   return (
     <Layout>
       {/* Hero */}
@@ -95,29 +85,45 @@ export default function NewsPage() {
       {/* Featured Post */}
       <section className="py-8">
         <div className="container mx-auto px-4">
-          <Card className="card-hover border-0 bg-card max-w-4xl mx-auto overflow-hidden">
-            <CardContent className="p-0">
-              <div className="grid md:grid-cols-2">
-                <div className="flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 p-12 text-8xl">
-                  {featuredPost.image}
-                </div>
-                <div className="p-8 flex flex-col justify-center">
-                  <Badge className={`w-fit mb-4 ${getTagColor(featuredPost.tag)}`}>
-                    {featuredPost.tag}
-                  </Badge>
-                  <h2 className="font-display text-2xl font-bold mb-4">{featuredPost.title}</h2>
-                  <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                    <Calendar className="h-4 w-4" />
-                    {featuredPost.date}
+          {loading ? (
+            <div className="text-center py-16">
+              <Loader className="h-8 w-8 animate-spin mx-auto" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-16 text-red-500">
+              Error loading posts. Please try again.
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              No news posts available yet.
+            </div>
+          ) : (
+            <>
+              <Card className="card-hover border-0 bg-card max-w-4xl mx-auto overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="grid md:grid-cols-2">
+                    <div className="flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 p-12 text-8xl">
+                      {featuredPost.image || "📰"}
+                    </div>
+                    <div className="p-8 flex flex-col justify-center">
+                      <Badge className={`w-fit mb-4 ${getTagColor(featuredPost.tag)}`}>
+                        {featuredPost.tag}
+                      </Badge>
+                      <h2 className="font-display text-2xl font-bold mb-4">{featuredPost.title}</h2>
+                      <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(featuredPost.created_at).toLocaleDateString()}
+                      </div>
+                      <Button className="btn-primary-gradient w-fit gap-2">
+                        Read More <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <Button className="btn-primary-gradient w-fit gap-2">
-                    Read More <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
       </section>
 
@@ -126,35 +132,51 @@ export default function NewsPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h2 className="font-display text-2xl font-bold mb-8">All Posts</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post, index) => (
-                <Card key={index} className="card-hover border-0 bg-card cursor-pointer overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="flex items-center justify-center bg-muted/50 py-8 text-5xl">
-                      {post.image}
-                    </div>
-                    <div className="p-6">
-                      <Badge className={`mb-3 ${getTagColor(post.tag)}`}>
-                        {post.tag}
-                      </Badge>
-                      <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{post.excerpt}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
-                        {post.date}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader className="h-6 w-6 animate-spin mx-auto" />
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">
+                Error loading posts.
+              </div>
+            ) : otherPosts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No additional posts available.
+              </div>
+            ) : (
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {otherPosts.map((post) => (
+                    <Card key={post.id} className="card-hover border-0 bg-card cursor-pointer overflow-hidden">
+                      <CardContent className="p-0">
+                        <div className="flex items-center justify-center bg-muted/50 py-8 text-5xl">
+                          {post.image || "📄"}
+                        </div>
+                        <div className="p-6">
+                          <Badge className={`mb-3 ${getTagColor(post.tag)}`}>
+                            {post.tag}
+                          </Badge>
+                          <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{post.excerpt}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(post.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
-            {/* Load More */}
-            <div className="text-center mt-12">
-              <Button variant="outline" size="lg">
-                Load More Posts
-              </Button>
-            </div>
+                {/* Load More */}
+                <div className="text-center mt-12">
+                  <Button variant="outline" size="lg">
+                    Load More Posts
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>

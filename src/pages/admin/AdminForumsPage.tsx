@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   MessageSquare, 
   Plus, 
@@ -9,7 +9,8 @@ import {
   Eye,
   Pin,
   Lock,
-  Flag
+  Flag,
+  Loader
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,31 +23,71 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { forumService } from "@/services/forumService";
+import { toast } from "@/components/ui/use-toast";
 
-const forumThreads = [
-  { id: 1, title: "Welcome to ZCraft Forums!", author: "Admin", category: "Announcements", replies: 156, isPinned: true, isLocked: false, reports: 0 },
-  { id: 2, title: "Server Rules - Read Before Playing", author: "Admin", category: "Announcements", replies: 45, isPinned: true, isLocked: true, reports: 0 },
-  { id: 3, title: "Best Base Designs?", author: "BuilderPro", category: "General", replies: 89, isPinned: false, isLocked: false, reports: 0 },
-  { id: 4, title: "Trading Diamond for Emeralds", author: "TraderJoe", category: "Trading", replies: 23, isPinned: false, isLocked: false, reports: 2 },
-  { id: 5, title: "Bug Report: Nether Portal Issue", author: "BugHunter", category: "Bug Reports", replies: 12, isPinned: false, isLocked: false, reports: 0 },
-  { id: 6, title: "Suggestion: New Minigame Mode", author: "GamerX", category: "Suggestions", replies: 67, isPinned: false, isLocked: false, reports: 0 },
-];
+interface ForumThread {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  replies_count: number;
+  created_at: string;
+}
 
-const categories = [
-  { name: "Announcements", threads: 24, posts: 892 },
-  { name: "General Discussion", threads: 1234, posts: 15678 },
-  { name: "Help & Support", threads: 567, posts: 2345 },
-  { name: "Suggestions", threads: 345, posts: 1234 },
-  { name: "Bug Reports", threads: 123, posts: 456 },
-  { name: "Trading", threads: 890, posts: 4567 },
-];
+interface ForumCategory {
+  id: string;
+  name: string;
+}
 
 export default function AdminForumsPage() {
+  const [threads, setThreads] = useState<ForumThread[]>([]);
+  const [categories, setCategories] = useState<ForumCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredThreads = forumThreads.filter(thread =>
+  useEffect(() => {
+    loadForumData();
+  }, []);
+
+  const loadForumData = async () => {
+    try {
+      const [threadsData, categoriesData] = await Promise.all([
+        forumService.getAllThreads(),
+        forumService.getCategories(),
+      ]);
+      setThreads(threadsData);
+      setCategories(categoriesData);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load forums");
+      toast({ title: "Error", description: "Failed to load forum data" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredThreads = threads.filter(thread =>
     thread.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <AdminLayout title="Forums Management">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Forums Management">
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Forums Management">
@@ -54,10 +95,10 @@ export default function AdminForumsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Threads", value: "3,183" },
-            { label: "Total Posts", value: "45,892" },
-            { label: "Active Today", value: "234" },
-            { label: "Reports Pending", value: "12" },
+            { label: "Total Threads", value: threads.length.toString() },
+            { label: "Total Posts", value: threads.reduce((sum, t) => sum + (t.replies_count || 0), 0).toString() },
+            { label: "Categories", value: categories.length.toString() },
+            { label: "Reports Pending", value: "0" },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4">
@@ -79,17 +120,21 @@ export default function AdminForumsPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
-              {categories.map((category) => (
-                <div key={category.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
-                  <div>
-                    <p className="font-medium">{category.name}</p>
-                    <p className="text-xs text-muted-foreground">{category.threads} threads • {category.posts} posts</p>
+              {categories.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">No categories</p>
+              ) : (
+                categories.map((category) => (
+                  <div key={category.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
+                    <div>
+                      <p className="font-medium">{category.name}</p>
+                      <p className="text-xs text-muted-foreground">{category.threads_count} threads • {category.posts_count} posts</p>
+                    </div>
+                    <Button variant="ghost" size="icon">
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="icon">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -113,53 +158,41 @@ export default function AdminForumsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {filteredThreads.map((thread) => (
-                <div key={thread.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {thread.isPinned && <Pin className="h-3 w-3 text-primary" />}
-                      {thread.isLocked && <Lock className="h-3 w-3 text-muted-foreground" />}
-                      <h3 className="font-medium truncate">{thread.title}</h3>
+              {filteredThreads.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No threads found</p>
+              ) : (
+                filteredThreads.map((thread) => (
+                  <div key={thread.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium truncate">{thread.title}</h3>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>by {thread.author}</span>
+                        <Badge variant="outline" className="text-xs">{thread.category}</Badge>
+                        <span>{thread.replies_count} replies</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>by {thread.author}</span>
-                      <Badge variant="outline" className="text-xs">{thread.category}</Badge>
-                      <span>{thread.replies} replies</span>
-                      {thread.reports > 0 && (
-                        <span className="flex items-center gap-1 text-destructive">
-                          <Flag className="h-3 w-3" />
-                          {thread.reports} reports
-                        </span>
-                      )}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Pin className="h-4 w-4 mr-2" />
-                        {thread.isPinned ? "Unpin" : "Pin"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Lock className="h-4 w-4 mr-2" />
-                        {thread.isLocked ? "Unlock" : "Lock"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

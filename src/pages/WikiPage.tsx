@@ -2,55 +2,72 @@ import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, BookOpen, Terminal, Gamepad2, HelpCircle, Rocket, ChevronRight, FileText } from "lucide-react";
+import { Search, BookOpen, Terminal, Gamepad2, HelpCircle, Rocket, ChevronRight, FileText, Loader } from "lucide-react";
+import { useState, useEffect } from "react";
+import { wikiService } from "@/services/wikiService";
+import { toast } from "@/components/ui/use-toast";
 
-const wikiCategories = [
-  {
-    name: "Getting Started",
-    icon: Rocket,
-    description: "New to ZCraft? Start here!",
-    articles: 12,
-    color: "bg-emerald-500/10 text-emerald-600",
-  },
-  {
-    name: "Commands",
-    icon: Terminal,
-    description: "All server commands explained",
-    articles: 45,
-    color: "bg-blue-500/10 text-blue-600",
-  },
-  {
-    name: "Game Mechanics",
-    icon: Gamepad2,
-    description: "Learn how things work",
-    articles: 28,
-    color: "bg-purple-500/10 text-purple-600",
-  },
-  {
-    name: "FAQs",
-    icon: HelpCircle,
-    description: "Frequently asked questions",
-    articles: 18,
-    color: "bg-amber-500/10 text-amber-600",
-  },
-];
+interface WikiCategory {
+  id: string;
+  name: string;
+  description: string;
+  articles_count: number;
+}
 
-const popularArticles = [
-  { title: "How to get started on ZCraft", views: "12.5K" },
-  { title: "Complete commands list", views: "8.2K" },
-  { title: "Economy guide for beginners", views: "6.8K" },
-  { title: "Claiming and protecting land", views: "5.4K" },
-  { title: "Custom enchantments explained", views: "4.9K" },
-];
-
-const recentArticles = [
-  { title: "New dungeon mechanics", date: "2 days ago" },
-  { title: "Updated teleportation commands", date: "4 days ago" },
-  { title: "Winter event guide", date: "1 week ago" },
-  { title: "Auction house tutorial", date: "1 week ago" },
-];
+interface WikiArticle {
+  id: string;
+  title: string;
+  views_count?: number;
+  created_at: string;
+}
 
 export default function WikiPage() {
+  const [categories, setCategories] = useState<WikiCategory[]>([]);
+  const [popularArticles, setPopularArticles] = useState<WikiArticle[]>([]);
+  const [recentArticles, setRecentArticles] = useState<WikiArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadWikiData();
+  }, []);
+
+  const loadWikiData = async () => {
+    try {
+      const [categoriesData, popularData, recentData] = await Promise.all([
+        wikiService.getCategories(),
+        wikiService.getPopularArticles(),
+        wikiService.getRecentArticles(),
+      ]);
+      setCategories(categoriesData);
+      setPopularArticles(popularData);
+      setRecentArticles(recentData);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load wiki");
+      toast({ title: "Error", description: "Failed to load wiki data" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* Hero */}
@@ -84,18 +101,22 @@ export default function WikiPage() {
         <div className="container mx-auto px-4">
           <h2 className="font-display text-2xl font-bold mb-6">Browse Categories</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {wikiCategories.map((category) => (
-              <Card key={category.name} className="card-hover border-0 bg-card cursor-pointer">
-                <CardContent className="p-6">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${category.color} mb-4`}>
-                    <category.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold mb-1">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-3">{category.description}</p>
-                  <Badge variant="secondary">{category.articles} articles</Badge>
-                </CardContent>
-              </Card>
-            ))}
+            {categories.length === 0 ? (
+              <p className="col-span-full text-center text-muted-foreground py-8">No categories available</p>
+            ) : (
+              categories.map((category) => (
+                <Card key={category.id} className="card-hover border-0 bg-card cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 mb-4">
+                      📚
+                    </div>
+                    <h3 className="font-display text-lg font-semibold mb-1">{category.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-3">{category.description}</p>
+                    <Badge variant="secondary">{category.articles_count} articles</Badge>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -112,21 +133,25 @@ export default function WikiPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {popularArticles.map((article, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{article.title}</span>
+                {popularArticles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">No popular articles yet</p>
+                ) : (
+                  popularArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{article.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">{(article.views_count || 0).toLocaleString()} views</span>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">{article.views} views</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
 
@@ -138,21 +163,27 @@ export default function WikiPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {recentArticles.map((article, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{article.title}</span>
+                {recentArticles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4">No recent articles yet</p>
+                ) : (
+                  recentArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{article.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(article.created_at).toLocaleDateString()}
+                        </span>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">{article.date}</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>

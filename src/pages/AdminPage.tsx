@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -14,7 +14,8 @@ import {
   Sun,
   Bell,
   Shield,
-  Activity
+  Activity,
+  Loader
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,24 +23,98 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
-const stats = [
-  { label: "Total Users", value: "12,458", change: "+12%", icon: Users },
-  { label: "Forum Posts", value: "45,892", change: "+8%", icon: MessageSquare },
-  { label: "Wiki Articles", value: "234", change: "+3%", icon: BookOpen },
-  { label: "Active Events", value: "5", change: "+2", icon: Calendar },
-];
+interface Stat {
+  label: string;
+  value: string;
+  change: string;
+  icon: React.ComponentType;
+}
 
-const recentActivity = [
-  { user: "Steve_MC", action: "Created new forum post", time: "2 minutes ago" },
-  { user: "Admin_Alex", action: "Updated server rules", time: "15 minutes ago" },
-  { user: "ModeratorJohn", action: "Banned user for spam", time: "1 hour ago" },
-  { user: "NewPlayer123", action: "Registered account", time: "2 hours ago" },
-];
+interface Activity {
+  id: string;
+  user_id: string;
+  action: string;
+  created_at: string;
+  username: string;
+}
 
 export default function AdminPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [announcementEnabled, setAnnouncementEnabled] = useState(true);
+  const [stats, setStats] = useState<Stat[]>([
+    { label: "Total Users", value: "0", change: "+0%", icon: Users },
+    { label: "Forum Posts", value: "0", change: "+0%", icon: MessageSquare },
+    { label: "Wiki Articles", value: "0", change: "+0%", icon: BookOpen },
+    { label: "Active Events", value: "0", change: "+0", icon: Calendar },
+  ]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      // Fetch all counts in parallel
+      const [usersData, postsData, articlesData, eventsData, activityData] = await Promise.all([
+        supabase.from("users").select("id", { count: "exact", head: true }),
+        supabase.from("forum_posts").select("id", { count: "exact", head: true }),
+        supabase.from("wiki_articles").select("id", { count: "exact", head: true }),
+        supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "upcoming"),
+        supabase.from("activity_logs").select("id, action, created_at, user_id, users(username)").order("created_at", { ascending: false }).limit(4),
+      ]);
+
+      const totalUsers = usersData.count || 0;
+      const totalPosts = postsData.count || 0;
+      const totalArticles = articlesData.count || 0;
+      const activeEvents = eventsData.count || 0;
+
+      setStats([
+        { label: "Total Users", value: totalUsers.toLocaleString(), change: "+12%", icon: Users },
+        { label: "Forum Posts", value: totalPosts.toLocaleString(), change: "+8%", icon: MessageSquare },
+        { label: "Wiki Articles", value: totalArticles.toLocaleString(), change: "+3%", icon: BookOpen },
+        { label: "Active Events", value: activeEvents.toString(), change: "+2", icon: Calendar },
+      ]);
+
+      if (activityData.data) {
+        setRecentActivity(activityData.data.map((item: any) => ({
+          id: item.id,
+          user_id: item.user_id,
+          action: item.action,
+          created_at: item.created_at,
+          username: item.users?.username || "Unknown",
+        })));
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to load dashboard data");
+      toast({ title: "Error", description: "Failed to load dashboard data" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Dashboard">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Dashboard">
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Dashboard">
@@ -85,18 +160,24 @@ export default function AdminPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-4 w-4 text-primary" />
+                  {recentActivity.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4">No recent activity</p>
+                  ) : (
+                    recentActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Users className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{activity.username}</p>
+                          <p className="text-xs text-muted-foreground">{activity.action}</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(activity.created_at).toLocaleTimeString()}
+                        </span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{activity.user}</p>
-                        <p className="text-xs text-muted-foreground">{activity.action}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{activity.time}</span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
 

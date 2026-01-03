@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,30 +7,70 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, MessageSquare, FileText, Bell, User, Shield } from "lucide-react";
-
-const userStats = {
-  username: "CraftMaster99",
-  joinDate: "March 2023",
-  rank: "Diamond",
-  posts: 156,
-  threads: 24,
-  playtime: "342h",
-};
-
-const recentPosts = [
-  { title: "Re: Best farming strategies?", date: "2 hours ago", category: "Help" },
-  { title: "Re: Show off your builds!", date: "1 day ago", category: "General" },
-  { title: "New enchantment ideas", date: "3 days ago", category: "Ideas" },
-];
-
-const notifications = [
-  { text: "Your thread received a new reply", time: "1 hour ago", read: false },
-  { text: "You earned the 'Veteran' badge", time: "2 days ago", read: true },
-  { text: "Staff replied to your ticket", time: "3 days ago", read: true },
-];
+import { Settings, MessageSquare, FileText, Bell, User, Shield, Loader } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const { user, userProfile, loading: authLoading } = useAuth();
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/login");
+      return;
+    }
+
+    const fetchUserPosts = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from('forum_posts')
+          .select('id, title, created_at, forum:forum_id(title)')
+          .eq('author_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (!error && data) {
+          setUserPosts(data);
+        }
+      } catch (err) {
+        console.error('Error fetching user posts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserPosts();
+  }, [user, authLoading, navigate]);
+
+  if (authLoading || loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader className="h-8 w-8 animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user || !userProfile) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <p className="text-muted-foreground">Please log in to view your profile.</p>
+          <Button className="mt-4" onClick={() => navigate("/login")}>Go to Login</Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const joinDate = new Date(userProfile.created_at).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+  });
   return (
     <Layout>
       <section className="py-12 lg:py-16">
@@ -38,25 +80,34 @@ export default function ProfilePage() {
             <Card className="border-0 bg-card mb-8">
               <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary/10 text-5xl">
-                    🎮
-                  </div>
+                  {userProfile.avatar_url ? (
+                    <img
+                      src={userProfile.avatar_url}
+                      alt={userProfile.username}
+                      className="h-24 w-24 rounded-2xl object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary/10 text-5xl">
+                      👤
+                    </div>
+                  )}
                   <div className="text-center md:text-left flex-1">
                     <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                      <h1 className="font-display text-2xl font-bold">{userStats.username}</h1>
-                      <Badge className="bg-primary/10 text-primary">{userStats.rank}</Badge>
+                      <h1 className="font-display text-2xl font-bold">{userProfile.username}</h1>
+                      <Badge className={`${userProfile.role === 'admin' ? 'bg-red-500/10 text-red-600' : userProfile.role === 'moderator' ? 'bg-blue-500/10 text-blue-600' : 'bg-primary/10 text-primary'}`}>
+                        {userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1)}
+                      </Badge>
                     </div>
                     <p className="text-muted-foreground mb-4">
-                      Member since {userStats.joinDate} • {userStats.playtime} playtime
+                      Member since {joinDate}
                     </p>
+                    {userProfile.bio && (
+                      <p className="text-foreground mb-4">{userProfile.bio}</p>
+                    )}
                     <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
                       <div>
-                        <span className="font-semibold text-foreground">{userStats.posts}</span>{" "}
+                        <span className="font-semibold text-foreground">{userPosts.length}</span>{" "}
                         <span className="text-muted-foreground">Posts</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-foreground">{userStats.threads}</span>{" "}
-                        <span className="text-muted-foreground">Threads</span>
                       </div>
                     </div>
                   </div>
@@ -95,15 +146,21 @@ export default function ProfilePage() {
                     <CardTitle className="font-display text-lg">Recent Posts</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {recentPosts.map((post, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
-                        <div>
-                          <h4 className="font-medium">{post.title}</h4>
-                          <p className="text-sm text-muted-foreground">in {post.category}</p>
+                    {userPosts.length > 0 ? (
+                      userPosts.map((post) => (
+                        <div key={post.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
+                          <div>
+                            <h4 className="font-medium">{post.title}</h4>
+                            <p className="text-sm text-muted-foreground">in {post.forum?.title || 'General'}</p>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(post.created_at).toLocaleDateString()}
+                          </span>
                         </div>
-                        <span className="text-sm text-muted-foreground">{post.date}</span>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-center text-muted-foreground py-8">No posts yet</p>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -115,7 +172,7 @@ export default function ProfilePage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground text-center py-8">
-                      You have created {userStats.threads} threads.
+                      You have created {userPosts.length} threads.
                     </p>
                   </CardContent>
                 </Card>
@@ -126,13 +183,10 @@ export default function ProfilePage() {
                   <CardHeader>
                     <CardTitle className="font-display text-lg">Notifications</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    {notifications.map((notif, index) => (
-                      <div key={index} className={`flex items-center justify-between p-4 rounded-lg transition-colors ${notif.read ? "bg-muted/30" : "bg-primary/5 border-l-2 border-primary"}`}>
-                        <span className={notif.read ? "text-muted-foreground" : "font-medium"}>{notif.text}</span>
-                        <span className="text-sm text-muted-foreground">{notif.time}</span>
-                      </div>
-                    ))}
+                  <CardContent>
+                    <p className="text-muted-foreground text-center py-8">
+                      No new notifications
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -149,11 +203,15 @@ export default function ProfilePage() {
                     <div className="grid gap-4">
                       <div className="space-y-2">
                         <Label>Email</Label>
-                        <Input defaultValue="player@example.com" />
+                        <Input disabled value={userProfile.email} />
                       </div>
                       <div className="space-y-2">
-                        <Label>Display Name</Label>
-                        <Input defaultValue={userStats.username} />
+                        <Label>Username</Label>
+                        <Input disabled value={userProfile.username} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Bio</Label>
+                        <Input defaultValue={userProfile.bio || ''} placeholder="Tell us about yourself" />
                       </div>
                     </div>
                     <div className="flex gap-3">

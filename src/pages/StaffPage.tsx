@@ -1,58 +1,87 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Shield, Star, Heart } from "lucide-react";
+import { Crown, Shield, Star, Heart, Loader } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
-const staffRoles = [
-  {
-    name: "Owners",
-    icon: Crown,
-    color: "text-amber-500",
-    bgColor: "bg-amber-500/10",
-    members: [
-      { name: "ZCraftOwner", avatar: "👑", joined: "2020" },
-      { name: "ServerFounder", avatar: "🎮", joined: "2020" },
-    ],
-  },
-  {
-    name: "Administrators",
-    icon: Shield,
-    color: "text-red-500",
-    bgColor: "bg-red-500/10",
-    members: [
-      { name: "AdminPro", avatar: "🛡️", joined: "2021" },
-      { name: "ServerManager", avatar: "⚙️", joined: "2021" },
-      { name: "TechAdmin", avatar: "💻", joined: "2022" },
-    ],
-  },
-  {
-    name: "Moderators",
-    icon: Star,
-    color: "text-emerald-500",
-    bgColor: "bg-emerald-500/10",
-    members: [
-      { name: "ModMaster", avatar: "✨", joined: "2022" },
-      { name: "ChatGuardian", avatar: "💬", joined: "2022" },
-      { name: "RuleKeeper", avatar: "📜", joined: "2023" },
-      { name: "FairPlay", avatar: "⚖️", joined: "2023" },
-      { name: "CommunityMod", avatar: "🌟", joined: "2023" },
-    ],
-  },
-  {
-    name: "Helpers",
-    icon: Heart,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    members: [
-      { name: "HelpfulHero", avatar: "💙", joined: "2024" },
-      { name: "NewbieGuide", avatar: "🎯", joined: "2024" },
-      { name: "SupportStar", avatar: "⭐", joined: "2024" },
-      { name: "FriendlyHelper", avatar: "🤝", joined: "2024" },
-    ],
-  },
-];
+interface StaffMember {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  created_at: string;
+  avatar_url?: string;
+}
+
+interface RoleGroup {
+  name: string;
+  icon: React.ComponentType;
+  color: string;
+  bgColor: string;
+  members: StaffMember[];
+}
 
 export default function StaffPage() {
+  const [staffGroups, setStaffGroups] = useState<RoleGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadStaff();
+  }, []);
+
+  const loadStaff = async () => {
+    try {
+      // Fetch all staff members (users with role other than 'player')
+      const { data, error: queryError } = await supabase
+        .from("users")
+        .select("id, username, email, role, created_at, avatar_url")
+        .in("role", ["owner", "admin", "moderator", "helper"]);
+
+      if (queryError) throw queryError;
+
+      // Group staff by role
+      const roleConfig = {
+        owner: { name: "Owners", icon: Crown, color: "text-amber-500", bgColor: "bg-amber-500/10" },
+        admin: { name: "Administrators", icon: Shield, color: "text-red-500", bgColor: "bg-red-500/10" },
+        moderator: { name: "Moderators", icon: Star, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
+        helper: { name: "Helpers", icon: Heart, color: "text-primary", bgColor: "bg-primary/10" },
+      };
+
+      const grouped = Object.entries(roleConfig).map(([roleKey, roleInfo]) => ({
+        ...roleInfo,
+        members: (data || []).filter((user: StaffMember) => user.role === roleKey),
+      }));
+
+      setStaffGroups(grouped.filter((group) => group.members.length > 0));
+    } catch (err: any) {
+      setError(err?.message || "Failed to load staff");
+      toast({ title: "Error", description: "Failed to load staff members" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* Hero */}
@@ -74,36 +103,42 @@ export default function StaffPage() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto space-y-12">
-            {staffRoles.map((role) => (
-              <div key={role.name}>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${role.bgColor}`}>
-                    <role.icon className={`h-5 w-5 ${role.color}`} />
+            {staffGroups.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No staff members found</p>
+            ) : (
+              staffGroups.map((role) => (
+                <div key={role.name}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${role.bgColor}`}>
+                      <role.icon className={`h-5 w-5 ${role.color}`} />
+                    </div>
+                    <h2 className="font-display text-2xl font-bold">{role.name}</h2>
+                    <Badge variant="secondary" className="ml-auto">
+                      {role.members.length} members
+                    </Badge>
                   </div>
-                  <h2 className="font-display text-2xl font-bold">{role.name}</h2>
-                  <Badge variant="secondary" className="ml-auto">
-                    {role.members.length} members
-                  </Badge>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {role.members.map((member) => (
-                    <Card key={member.name} className="card-hover border-0 bg-card">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-2xl">
-                            {member.avatar}
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {role.members.map((member) => (
+                      <Card key={member.id} className="card-hover border-0 bg-card">
+                        <CardContent className="p-6">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-2xl">
+                              {member.avatar_url || "👤"}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">{member.username}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                Since {new Date(member.created_at).getFullYear()}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="font-semibold">{member.name}</h3>
-                            <p className="text-sm text-muted-foreground">Since {member.joined}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>

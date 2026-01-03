@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   Users, 
@@ -9,7 +9,8 @@ import {
   Mail,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Loader
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,23 +30,53 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
-const users = [
-  { id: 1, username: "Steve_MC", email: "steve@example.com", role: "Admin", status: "active", joined: "2024-01-15" },
-  { id: 2, username: "Alex_Builder", email: "alex@example.com", role: "Moderator", status: "active", joined: "2024-02-20" },
-  { id: 3, username: "CreeperKing", email: "creeper@example.com", role: "Member", status: "active", joined: "2024-03-10" },
-  { id: 4, username: "DiamondMiner", email: "diamond@example.com", role: "Member", status: "banned", joined: "2024-03-15" },
-  { id: 5, username: "RedstoneWiz", email: "redstone@example.com", role: "Helper", status: "active", joined: "2024-04-01" },
-  { id: 6, username: "NetherExplorer", email: "nether@example.com", role: "Member", status: "active", joined: "2024-04-10" },
-  { id: 7, username: "EndDragonSlayer", email: "end@example.com", role: "Member", status: "inactive", joined: "2024-04-20" },
-  { id: 8, username: "VillagerTrader", email: "villager@example.com", role: "Member", status: "active", joined: "2024-05-01" },
-];
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+}
 
 export default function AdminUsersPage() {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredUsers = users.filter(user => {
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      const { data, error: queryError } = await supabase
+        .from("users")
+        .select("id, username, email, role, created_at")
+        .order("created_at", { ascending: false });
+
+      if (queryError) throw queryError;
+
+      setAllUsers(
+        (data || []).map((user: any) => ({
+          ...user,
+          status: "active",
+        }))
+      );
+    } catch (err: any) {
+      setError(err?.message || "Failed to load users");
+      toast({ title: "Error", description: "Failed to load users" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = allUsers.filter(user => {
     const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter;
@@ -69,6 +100,24 @@ export default function AdminUsersPage() {
       default: return "text-muted-foreground";
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Users">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Users">
+        <div className="py-20 text-center text-red-500">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Users">
@@ -141,29 +190,38 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <span className="font-medium text-primary">{user.username[0]}</span>
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-8 text-muted-foreground">
+                        No users found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="font-medium text-primary">{user.username[0]}</span>
+                            </div>
+                            <div>
+                              <p className="font-medium">{user.username}</p>
+                              <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">{user.username}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`capitalize ${getStatusColor(user.status)}`}>{user.status}</span>
-                      </td>
-                      <td className="py-3 px-4 text-muted-foreground">{user.joined}</td>
-                      <td className="py-3 px-4 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`capitalize ${getStatusColor(user.status)}`}>{user.status}</span>
+                        </td>
+                        <td className="py-3 px-4 text-muted-foreground">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -182,10 +240,11 @@ export default function AdminUsersPage() {
                               Ban User
                             </DropdownMenuItem>
                           </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
+                          </DropdownMenu>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

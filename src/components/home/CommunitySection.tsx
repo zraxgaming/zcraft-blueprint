@@ -3,56 +3,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { newsService } from "@/services/newsService";
+import { forumService } from "@/services/forumService";
 
-const announcements = [
-  {
-    id: 1,
-    title: "Summer Event 2024 is Here!",
-    date: "Dec 28, 2024",
-    type: "Event",
-    excerpt: "Join us for exclusive rewards, special challenges, and limited-time content.",
-  },
-  {
-    id: 2,
-    title: "Server Update v3.2.1",
-    date: "Dec 25, 2024",
-    type: "Update",
-    excerpt: "New features, bug fixes, and performance improvements are now live.",
-  },
-  {
-    id: 3,
-    title: "New Staff Applications Open",
-    date: "Dec 20, 2024",
-    type: "Announcement",
-    excerpt: "We're looking for dedicated players to join our moderation team.",
-  },
-];
+type Announcement = { id: string; title: string; date: string; type?: string; excerpt?: string };
+type ThreadPreview = { id: string; title: string; author?: { username?: string }; replies?: number; category?: string };
 
-const forumPosts = [
-  {
-    id: 1,
-    title: "Best farming strategies for beginners?",
-    author: "CraftMaster99",
-    replies: 24,
-    category: "Help & Support",
-  },
-  {
-    id: 2,
-    title: "Show off your builds! (December Edition)",
-    author: "BuilderPro",
-    replies: 156,
-    category: "General",
-  },
-  {
-    id: 3,
-    title: "Suggestion: New enchantment ideas",
-    author: "EnchantWizard",
-    replies: 42,
-    category: "Ideas & Feedback",
-  },
-];
+// Initially show server-side data; these were previously hardcoded mock arrays.
+const initialAnnouncements: Announcement[] = [];
+const initialForumPosts: ThreadPreview[] = [];
 
 export function CommunitySection() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
+  const [forumPosts, setForumPosts] = useState<ThreadPreview[]>(initialForumPosts);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [newsData, threadsData] = await Promise.all([
+          newsService.getNews(3, 0),
+          forumService.getLatestThreads(3),
+        ]);
+
+        setAnnouncements(
+          (newsData || []).map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            date: n.created_at ? new Date(n.created_at).toLocaleDateString() : "",
+            type: "News",
+            excerpt: n.excerpt || "",
+          }))
+        );
+
+        setForumPosts((threadsData as any) || []);
+      } catch (err) {
+        console.error("Error loading community data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
