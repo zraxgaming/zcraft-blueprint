@@ -12,20 +12,21 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative overflow-hidden py-20 lg:py-32">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDk5OTkiIGZpbGwtb3BhY2l0eT0iMC4wNCI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyem0wLTRoLTEydi0yaDEydjJ6bS0xMi04aDEydjJIMjR2LTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50" />
+    <section className="relative overflow-hidden py-24 lg:py-36">
+      {/* Background gradient */}
+      <div className="absolute inset-0 hero-gradient" />
       
-      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
 
       <div className="container mx-auto px-4 relative">
         <div className="max-w-4xl mx-auto text-center animate-slide-up">
           {/* Server Logo */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary glow-effect">
-                <span className="font-display text-5xl font-black text-primary-foreground">Z</span>
+              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-orange-400 shadow-xl">
+                <span className="font-display text-5xl font-black text-white">Z</span>
               </div>
               <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-xl animate-pulse-glow -z-10" />
             </div>
