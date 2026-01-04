@@ -1,20 +1,11 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Users, ArrowRight, Loader } from "lucide-react";
+import { Calendar, ArrowRight, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { eventService } from "@/services/eventService";
+import { eventService, Event } from "@/services/eventService";
 import { toast } from "@/components/ui/use-toast";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date?: string;
-  status: string;
-}
 
 export default function EventsPage() {
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
@@ -107,7 +98,7 @@ export default function EventsPage() {
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <span className="flex items-center gap-2 text-muted-foreground">
                               <Calendar className="h-4 w-4" />
-                              {new Date(event.start_date).toLocaleDateString()}
+                              {new Date(event.date).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -142,7 +133,7 @@ export default function EventsPage() {
                       <Badge variant="secondary" className="mb-3">Completed</Badge>
                       <h3 className="font-semibold mb-2">{event.title}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        {new Date(event.start_date).toLocaleDateString()}
+                        {new Date(event.date).toLocaleDateString()}
                       </p>
                     </CardContent>
                   </Card>

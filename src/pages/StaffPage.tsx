@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Shield, Star, Heart, Loader } from "lucide-react";
+import { Crown, Shield, Star, Heart, Loader, LucideIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
@@ -17,7 +17,7 @@ interface StaffMember {
 
 interface RoleGroup {
   name: string;
-  icon: React.ComponentType;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   members: StaffMember[];
@@ -43,7 +43,7 @@ export default function StaffPage() {
       if (queryError) throw queryError;
 
       // Group staff by role
-      const roleConfig = {
+      const roleConfig: Record<string, { name: string; icon: LucideIcon; color: string; bgColor: string }> = {
         owner: { name: "Owners", icon: Crown, color: "text-amber-500", bgColor: "bg-amber-500/10" },
         admin: { name: "Administrators", icon: Shield, color: "text-red-500", bgColor: "bg-red-500/10" },
         moderator: { name: "Moderators", icon: Star, color: "text-emerald-500", bgColor: "bg-emerald-500/10" },
@@ -106,38 +106,43 @@ export default function StaffPage() {
             {staffGroups.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No staff members found</p>
             ) : (
-              staffGroups.map((role) => (
-                <div key={role.name}>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${role.bgColor}`}>
-                      <role.icon className={`h-5 w-5 ${role.color}`} />
+              staffGroups.map((role) => {
+                const IconComponent = role.icon;
+                return (
+                  <div key={role.name}>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${role.bgColor}`}>
+                        <IconComponent className={`h-5 w-5 ${role.color}`} />
+                      </div>
+                      <h2 className="font-display text-2xl font-bold">{role.name}</h2>
+                      <Badge variant="secondary" className="ml-auto">
+                        {role.members.length} members
+                      </Badge>
                     </div>
-                    <h2 className="font-display text-2xl font-bold">{role.name}</h2>
-                    <Badge variant="secondary" className="ml-auto">
-                      {role.members.length} members
-                    </Badge>
-                  </div>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {role.members.map((member) => (
-                      <Card key={member.id} className="card-hover border-0 bg-card">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-2xl">
-                              {member.avatar_url || "👤"}
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {role.members.map((member) => (
+                        <Card key={member.id} className="card-hover border-0 bg-card">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted text-2xl">
+                                {member.avatar_url ? (
+                                  <img src={member.avatar_url} alt={member.username} className="h-full w-full rounded-xl object-cover" />
+                                ) : "👤"}
+                              </div>
+                              <div>
+                                <h3 className="font-semibold">{member.username}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  Since {new Date(member.created_at).getFullYear()}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="font-semibold">{member.username}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Since {new Date(member.created_at).getFullYear()}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

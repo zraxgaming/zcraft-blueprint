@@ -30,20 +30,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { newsService } from "@/services/newsService";
+import { newsService, NewsArticle } from "@/services/newsService";
 import { toast } from "@/components/ui/use-toast";
 
-interface NewsPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  created_at: string;
-  tag: string;
-  status: string;
-}
-
 export default function AdminNewsPage() {
-  const [posts, setPosts] = useState<NewsPost[]>([]);
+  const [posts, setPosts] = useState<NewsArticle[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,13 +60,12 @@ export default function AdminNewsPage() {
     post.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getTagColor = (tag: string) => {
-    switch (tag) {
-      case "Event": return "bg-purple-500/10 text-purple-500";
-      case "Update": return "bg-blue-500/10 text-blue-500";
-      case "Maintenance": return "bg-amber-500/10 text-amber-500";
-      default: return "bg-primary/10 text-primary";
-    }
+  const getTagColor = (slug?: string) => {
+    const tag = slug?.toLowerCase() || "";
+    if (tag.includes("event")) return "bg-purple-500/10 text-purple-500";
+    if (tag.includes("update")) return "bg-blue-500/10 text-blue-500";
+    if (tag.includes("maintenance")) return "bg-amber-500/10 text-amber-500";
+    return "bg-primary/10 text-primary";
   };
 
   if (loading) {
@@ -146,10 +136,10 @@ export default function AdminNewsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Posts", value: "45" },
-            { label: "Published", value: "42" },
-            { label: "Drafts", value: "3" },
-            { label: "Total Views", value: "156K" },
+            { label: "Total Posts", value: posts.length.toString() },
+            { label: "Published", value: posts.length.toString() },
+            { label: "Drafts", value: "0" },
+            { label: "Total Views", value: posts.reduce((sum, p) => sum + (p.views || 0), 0).toLocaleString() },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4">
@@ -182,8 +172,8 @@ export default function AdminNewsPage() {
                       <div>
                         <h3 className="font-medium">{post.title}</h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTagColor(post.tag)}`}>
-                            {post.tag}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTagColor(post.slug)}`}>
+                            News
                           </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
@@ -193,8 +183,8 @@ export default function AdminNewsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={post.status === "published" ? "default" : "secondary"}>
-                        {post.status}
+                      <Badge variant="default">
+                        Published
                       </Badge>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

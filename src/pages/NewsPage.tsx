@@ -4,37 +4,22 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { newsService } from "@/services/newsService";
+import { newsService, NewsArticle } from "@/services/newsService";
 import { toast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
-interface NewsPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  created_at: string;
-  tag: string;
-  image?: string;
-}
-
-const getTagColor = (tag: string) => {
-  switch (tag) {
-    case "Event":
-      return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-    case "Update":
-      return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-    case "Announcement":
-      return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-    case "Maintenance":
-      return "bg-red-500/10 text-red-600 dark:text-red-400";
-    case "Community":
-      return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
-    default:
-      return "bg-muted text-muted-foreground";
-  }
+const getTagColor = (slug?: string) => {
+  const tag = slug?.toLowerCase() || "";
+  if (tag.includes("event")) return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+  if (tag.includes("update")) return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+  if (tag.includes("announce")) return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
+  if (tag.includes("maintenance")) return "bg-red-500/10 text-red-600 dark:text-red-400";
+  if (tag.includes("community")) return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
+  return "bg-muted text-muted-foreground";
 };
 
 export default function NewsPage() {
-  const [posts, setPosts] = useState<NewsPost[]>([]);
+  const [posts, setPosts] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,13 +41,7 @@ export default function NewsPage() {
     }
   };
 
-  const featuredPost = posts[0] || {
-    title: "No news yet",
-    excerpt: "Check back soon for updates!",
-    created_at: new Date().toISOString(),
-    tag: "News",
-  };
-
+  const featuredPost = posts[0];
   const otherPosts = posts.slice(1);
   
   return (
@@ -97,33 +76,35 @@ export default function NewsPage() {
             <div className="text-center py-16 text-muted-foreground">
               No news posts available yet.
             </div>
-          ) : (
-            <>
-              <Card className="card-hover border-0 bg-card max-w-4xl mx-auto overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="grid md:grid-cols-2">
-                    <div className="flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 p-12 text-8xl">
-                      {featuredPost.image || "📰"}
+          ) : featuredPost ? (
+            <Card className="card-hover border-0 bg-card max-w-4xl mx-auto overflow-hidden">
+              <CardContent className="p-0">
+                <div className="grid md:grid-cols-2">
+                  <div className="flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20 p-12 text-8xl">
+                    {featuredPost.image_url ? (
+                      <img src={featuredPost.image_url} alt={featuredPost.title} className="w-full h-full object-cover" />
+                    ) : "📰"}
+                  </div>
+                  <div className="p-8 flex flex-col justify-center">
+                    <Badge className={`w-fit mb-4 ${getTagColor(featuredPost.slug)}`}>
+                      News
+                    </Badge>
+                    <h2 className="font-display text-2xl font-bold mb-4">{featuredPost.title}</h2>
+                    <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(featuredPost.created_at).toLocaleDateString()}
                     </div>
-                    <div className="p-8 flex flex-col justify-center">
-                      <Badge className={`w-fit mb-4 ${getTagColor(featuredPost.tag)}`}>
-                        {featuredPost.tag}
-                      </Badge>
-                      <h2 className="font-display text-2xl font-bold mb-4">{featuredPost.title}</h2>
-                      <p className="text-muted-foreground mb-4">{featuredPost.excerpt}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                        <Calendar className="h-4 w-4" />
-                        {new Date(featuredPost.created_at).toLocaleDateString()}
-                      </div>
+                    <Link to={`/news/${featuredPost.slug}`}>
                       <Button className="btn-primary-gradient w-fit gap-2">
                         Read More <ArrowRight className="h-4 w-4" />
                       </Button>
-                    </div>
+                    </Link>
                   </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </section>
 
@@ -148,24 +129,28 @@ export default function NewsPage() {
               <>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {otherPosts.map((post) => (
-                    <Card key={post.id} className="card-hover border-0 bg-card cursor-pointer overflow-hidden">
-                      <CardContent className="p-0">
-                        <div className="flex items-center justify-center bg-muted/50 py-8 text-5xl">
-                          {post.image || "📄"}
-                        </div>
-                        <div className="p-6">
-                          <Badge className={`mb-3 ${getTagColor(post.tag)}`}>
-                            {post.tag}
-                          </Badge>
-                          <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{post.excerpt}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(post.created_at).toLocaleDateString()}
+                    <Link key={post.id} to={`/news/${post.slug}`}>
+                      <Card className="card-hover border-0 bg-card cursor-pointer overflow-hidden h-full">
+                        <CardContent className="p-0">
+                          <div className="flex items-center justify-center bg-muted/50 py-8 text-5xl">
+                            {post.image_url ? (
+                              <img src={post.image_url} alt={post.title} className="w-full h-32 object-cover" />
+                            ) : "📄"}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="p-6">
+                            <Badge className={`mb-3 ${getTagColor(post.slug)}`}>
+                              News
+                            </Badge>
+                            <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{post.excerpt}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   ))}
                 </div>
 

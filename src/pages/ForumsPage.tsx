@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, MessageSquare, Pin, Users, Clock, TrendingUp, ChevronRight, Loader } from "lucide-react";
+import { Search, MessageSquare, Users, Clock, TrendingUp, ChevronRight, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { forumService } from "@/services/forumService";
 import { toast } from "@/components/ui/use-toast";
@@ -13,8 +13,6 @@ interface ForumCategory {
   id: string;
   name: string;
   description: string;
-  threads_count: number;
-  posts_count: number;
 }
 
 interface ForumThread {
@@ -31,7 +29,7 @@ export default function ForumsPage() {
   const [latestThreads, setLatestThreads] = useState<ForumThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, userProfile } = useAuth();
+  const { user } = useAuth();
   const [showNewThread, setShowNewThread] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState("");
   const [newThreadContent, setNewThreadContent] = useState("");
@@ -122,16 +120,6 @@ export default function ForumsPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold mb-1">{category.name}</h3>
                           <p className="text-sm text-muted-foreground truncate">{category.description}</p>
-                        </div>
-                        <div className="hidden md:flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <p className="font-semibold">{category.threads_count.toLocaleString()}</p>
-                            <p className="text-muted-foreground">Threads</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold">{category.posts_count.toLocaleString()}</p>
-                            <p className="text-muted-foreground">Posts</p>
-                          </div>
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>

@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, BookOpen, Terminal, Gamepad2, HelpCircle, Rocket, ChevronRight, FileText, Loader } from "lucide-react";
+import { Search, BookOpen, ChevronRight, FileText, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { wikiService } from "@/services/wikiService";
 import { toast } from "@/components/ui/use-toast";
@@ -14,17 +14,18 @@ interface WikiCategory {
   articles_count: number;
 }
 
-interface WikiArticle {
+interface WikiArticlePreview {
   id: string;
   title: string;
   views_count?: number;
-  created_at: string;
+  created_at?: string;
+  author?: string;
 }
 
 export default function WikiPage() {
   const [categories, setCategories] = useState<WikiCategory[]>([]);
-  const [popularArticles, setPopularArticles] = useState<WikiArticle[]>([]);
-  const [recentArticles, setRecentArticles] = useState<WikiArticle[]>([]);
+  const [popularArticles, setPopularArticles] = useState<WikiArticlePreview[]>([]);
+  const [recentArticles, setRecentArticles] = useState<WikiArticlePreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -177,7 +178,7 @@ export default function WikiPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
-                          {new Date(article.created_at).toLocaleDateString()}
+                          {article.created_at ? new Date(article.created_at).toLocaleDateString() : "N/A"}
                         </span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                       </div>
