@@ -1,4 +1,4 @@
-import { MessageSquare, Bell, Calendar, ArrowRight } from "lucide-react";
+import { MessageSquare, Bell, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,15 +8,11 @@ import { newsService } from "@/services/newsService";
 import { forumService } from "@/services/forumService";
 
 type Announcement = { id: string; title: string; date: string; type?: string; excerpt?: string };
-type ThreadPreview = { id: string; title: string; author?: { username?: string }; replies?: number; category?: string };
-
-// Initially show server-side data; these were previously hardcoded mock arrays.
-const initialAnnouncements: Announcement[] = [];
-const initialForumPosts: ThreadPreview[] = [];
+type ThreadPreview = { id: string; title: string; author: string; replies_count: number; category: string };
 
 export function CommunitySection() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
-  const [forumPosts, setForumPosts] = useState<ThreadPreview[]>(initialForumPosts);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [forumPosts, setForumPosts] = useState<ThreadPreview[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,7 +34,7 @@ export function CommunitySection() {
           }))
         );
 
-        setForumPosts((threadsData as any) || []);
+        setForumPosts(threadsData || []);
       } catch (err) {
         console.error("Error loading community data:", err);
       } finally {
@@ -76,21 +72,27 @@ export function CommunitySection() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {announcements.map((post) => (
-                <div
-                  key={post.id}
-                  className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {post.type}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{post.date}</span>
+              {loading ? (
+                <p className="text-sm text-muted-foreground py-4">Loading...</p>
+              ) : announcements.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">No news available</p>
+              ) : (
+                announcements.map((post) => (
+                  <div
+                    key={post.id}
+                    className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {post.type}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{post.date}</span>
+                    </div>
+                    <h4 className="font-semibold mb-1">{post.title}</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
                   </div>
-                  <h4 className="font-semibold mb-1">{post.title}</h4>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -108,21 +110,27 @@ export function CommunitySection() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {forumPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant="outline" className="text-xs">
-                      {post.category}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{post.replies} replies</span>
+              {loading ? (
+                <p className="text-sm text-muted-foreground py-4">Loading...</p>
+              ) : forumPosts.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">No forum posts available</p>
+              ) : (
+                forumPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        {post.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{post.replies_count} replies</span>
+                    </div>
+                    <h4 className="font-semibold mb-1">{post.title}</h4>
+                    <p className="text-sm text-muted-foreground">by {post.author}</p>
                   </div>
-                  <h4 className="font-semibold mb-1">{post.title}</h4>
-                  <p className="text-sm text-muted-foreground">by {post.author}</p>
-                </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

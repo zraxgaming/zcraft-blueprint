@@ -36,9 +36,10 @@ import { toast } from "@/components/ui/use-toast";
 interface WikiArticle {
   id: string;
   title: string;
-  category_id: string;
+  category: string;
   views_count: number;
   created_at: string;
+  author: string;
 }
 
 interface WikiCategory {

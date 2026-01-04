@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Users, 
@@ -8,14 +8,11 @@ import {
   BookOpen,
   Calendar,
   Settings,
-  TrendingUp,
   Server,
-  Moon,
-  Sun,
-  Bell,
   Shield,
   Activity,
-  Loader
+  Loader,
+  LucideIcon
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,10 +27,10 @@ interface Stat {
   label: string;
   value: string;
   change: string;
-  icon: React.ComponentType;
+  icon: LucideIcon;
 }
 
-interface Activity {
+interface ActivityItem {
   id: string;
   user_id: string;
   action: string;
@@ -50,7 +47,7 @@ export default function AdminPage() {
     { label: "Wiki Articles", value: "0", change: "+0%", icon: BookOpen },
     { label: "Active Events", value: "0", change: "+0", icon: Calendar },
   ]);
-  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,12 +58,11 @@ export default function AdminPage() {
   const loadDashboardData = async () => {
     try {
       // Fetch all counts in parallel
-      const [usersData, postsData, articlesData, eventsData, activityData] = await Promise.all([
+      const [usersData, postsData, articlesData, eventsData] = await Promise.all([
         supabase.from("users").select("id", { count: "exact", head: true }),
         supabase.from("forum_posts").select("id", { count: "exact", head: true }),
-        supabase.from("wiki_articles").select("id", { count: "exact", head: true }),
-        supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "upcoming"),
-        supabase.from("activity_logs").select("id, action, created_at, user_id, users(username)").order("created_at", { ascending: false }).limit(4),
+        supabase.from("wiki").select("id", { count: "exact", head: true }),
+        supabase.from("events").select("id", { count: "exact", head: true }),
       ]);
 
       const totalUsers = usersData.count || 0;
@@ -80,16 +76,6 @@ export default function AdminPage() {
         { label: "Wiki Articles", value: totalArticles.toLocaleString(), change: "+3%", icon: BookOpen },
         { label: "Active Events", value: activeEvents.toString(), change: "+2", icon: Calendar },
       ]);
-
-      if (activityData.data) {
-        setRecentActivity(activityData.data.map((item: any) => ({
-          id: item.id,
-          user_id: item.user_id,
-          action: item.action,
-          created_at: item.created_at,
-          username: item.users?.username || "Unknown",
-        })));
-      }
     } catch (err: any) {
       setError(err?.message || "Failed to load dashboard data");
       toast({ title: "Error", description: "Failed to load dashboard data" });
@@ -122,7 +108,7 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => {
-            const Icon = stat.icon;
+            const IconComponent = stat.icon;
             return (
               <Card key={stat.label} className="card-hover">
                 <CardContent className="p-6">
@@ -133,7 +119,7 @@ export default function AdminPage() {
                       <p className="text-xs text-emerald-500 font-medium">{stat.change}</p>
                     </div>
                     <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Icon className="h-6 w-6 text-primary" />
+                      <IconComponent className="h-6 w-6 text-primary" />
                     </div>
                   </div>
                 </CardContent>
@@ -199,8 +185,8 @@ export default function AdminPage() {
                     <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-3">
                         <div className={`h-3 w-3 rounded-full ${
-                          service.status === 'online' ? 'status-online' :
-                          service.status === 'degraded' ? 'status-degraded' : 'status-offline'
+                          service.status === 'online' ? 'bg-emerald-500' :
+                          service.status === 'degraded' ? 'bg-amber-500' : 'bg-red-500'
                         }`} />
                         <span className="font-medium">{service.name}</span>
                       </div>
@@ -264,13 +250,13 @@ export default function AdminPage() {
                 { title: "Wiki Articles", count: 234, icon: BookOpen, href: "/admin/wiki" },
                 { title: "Forum Topics", count: 1892, icon: MessageSquare, href: "/admin/forums" },
               ].map((item) => {
-                const Icon = item.icon;
+                const IconComponent = item.icon;
                 return (
                   <Card key={item.title} className="card-hover">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-4 mb-4">
                         <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-6 w-6 text-primary" />
+                          <IconComponent className="h-6 w-6 text-primary" />
                         </div>
                         <div>
                           <p className="font-medium">{item.title}</p>

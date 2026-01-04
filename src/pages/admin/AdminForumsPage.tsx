@@ -7,9 +7,6 @@ import {
   Edit, 
   Trash2,
   Eye,
-  Pin,
-  Lock,
-  Flag,
   Loader
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +35,7 @@ interface ForumThread {
 interface ForumCategory {
   id: string;
   name: string;
+  description: string;
 }
 
 export default function AdminForumsPage() {
@@ -127,7 +125,7 @@ export default function AdminForumsPage() {
                   <div key={category.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
                     <div>
                       <p className="font-medium">{category.name}</p>
-                      <p className="text-xs text-muted-foreground">{category.threads_count} threads • {category.posts_count} posts</p>
+                      <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
                     <Button variant="ghost" size="icon">
                       <Edit className="h-4 w-4" />
