@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { 
   Users, 
   Search, 
@@ -30,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 interface User {
@@ -38,7 +37,7 @@ interface User {
   username: string;
   email: string;
   role: string;
-  status: string;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -47,7 +46,6 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -55,21 +53,31 @@ export default function AdminUsersPage() {
 
   const loadUsers = async () => {
     try {
-      const { data, error: queryError } = await supabase
+      setLoading(true);
+      
+      // Fetch users with their roles
+      const { data: usersData, error: usersError } = await supabase
         .from("users")
-        .select("id, username, email, role, created_at")
+        .select("id, username, email, avatar_url, created_at")
         .order("created_at", { ascending: false });
 
-      if (queryError) throw queryError;
+      if (usersError) throw usersError;
+
+      // Fetch roles for all users
+      const { data: rolesData } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+
+      const rolesMap = new Map((rolesData || []).map(r => [r.user_id, r.role]));
 
       setAllUsers(
-        (data || []).map((user: any) => ({
+        (usersData || []).map((user: any) => ({
           ...user,
-          status: "active",
+          role: rolesMap.get(user.id) || 'user',
         }))
       );
     } catch (err: any) {
-      setError(err?.message || "Failed to load users");
+      console.error('Error loading users:', err);
       toast({ title: "Error", description: "Failed to load users" });
     } finally {
       setLoading(false);
@@ -87,17 +95,7 @@ export default function AdminUsersPage() {
     switch (role.toLowerCase()) {
       case "admin": return "destructive";
       case "moderator": return "default";
-      case "helper": return "secondary";
       default: return "outline";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "text-emerald-500";
-      case "banned": return "text-red-500";
-      case "inactive": return "text-muted-foreground";
-      default: return "text-muted-foreground";
     }
   };
 
@@ -111,24 +109,16 @@ export default function AdminUsersPage() {
     );
   }
 
-  if (error) {
-    return (
-      <AdminLayout title="Users">
-        <div className="py-20 text-center text-red-500">{error}</div>
-      </AdminLayout>
-    );
-  }
-
   return (
     <AdminLayout title="Users">
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Users", value: "12,458" },
-            { label: "Active Today", value: "2,341" },
-            { label: "New This Week", value: "156" },
-            { label: "Banned", value: "89" },
+            { label: "Total Users", value: allUsers.length.toString() },
+            { label: "Admins", value: allUsers.filter(u => u.role === 'admin').length.toString() },
+            { label: "Moderators", value: allUsers.filter(u => u.role === 'moderator').length.toString() },
+            { label: "Members", value: allUsers.filter(u => u.role === 'user').length.toString() },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4">
@@ -161,8 +151,7 @@ export default function AdminUsersPage() {
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="moderator">Moderator</SelectItem>
-                  <SelectItem value="helper">Helper</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -174,7 +163,7 @@ export default function AdminUsersPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              All Users
+              All Users ({filteredUsers.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -184,7 +173,6 @@ export default function AdminUsersPage() {
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">User</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Role</th>
-                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Joined</th>
                     <th className="text-right py-3 px-4 font-medium text-muted-foreground">Actions</th>
                   </tr>
@@ -192,7 +180,7 @@ export default function AdminUsersPage() {
                 <tbody>
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <td colSpan={4} className="text-center py-8 text-muted-foreground">
                         No users found
                       </td>
                     </tr>
@@ -201,9 +189,13 @@ export default function AdminUsersPage() {
                       <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="font-medium text-primary">{user.username[0]}</span>
-                            </div>
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt={user.username} className="h-10 w-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span className="font-medium text-primary">{user.username[0]?.toUpperCase()}</span>
+                              </div>
+                            )}
                             <div>
                               <p className="font-medium">{user.username}</p>
                               <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -211,10 +203,7 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant={getRoleBadgeVariant(user.role)}>{user.role}</Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`capitalize ${getStatusColor(user.status)}`}>{user.status}</span>
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">{user.role}</Badge>
                         </td>
                         <td className="py-3 px-4 text-muted-foreground">
                           {new Date(user.created_at).toLocaleDateString()}
@@ -222,24 +211,24 @@ export default function AdminUsersPage() {
                         <td className="py-3 px-4 text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Change Role
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Mail className="h-4 w-4 mr-2" />
-                              Send Email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              <Ban className="h-4 w-4 mr-2" />
-                              Ban User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Shield className="h-4 w-4 mr-2" />
+                                Change Role
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Mail className="h-4 w-4 mr-2" />
+                                Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive">
+                                <Ban className="h-4 w-4 mr-2" />
+                                Ban User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
                           </DropdownMenu>
                         </td>
                       </tr>
@@ -247,24 +236,6 @@ export default function AdminUsersPage() {
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">Showing 1-8 of 12,458 users</p>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" disabled>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm">1</Button>
-                <Button variant="ghost" size="sm">2</Button>
-                <Button variant="ghost" size="sm">3</Button>
-                <span className="text-muted-foreground">...</span>
-                <Button variant="ghost" size="sm">1558</Button>
-                <Button variant="outline" size="icon">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </CardContent>
         </Card>

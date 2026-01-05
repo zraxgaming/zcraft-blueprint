@@ -34,7 +34,6 @@ import AdminEventsPage from "./pages/admin/AdminEventsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
-import DiscordCallbackPage from "./pages/DiscordCallbackPage";
 import DiscordRedirectPage from "./pages/DiscordRedirectPage";
 import NotFound from "./pages/NotFound";
 
@@ -79,7 +78,6 @@ const App = () => (
             <Route path="/admin/settings" element={<AdminSettingsPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/auth/discord/callback" element={<DiscordCallbackPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Author {
   id: string;
@@ -15,26 +15,26 @@ export interface NewsArticle {
   author_id: string;
   author?: Author;
   image_url: string | null;
-  views: number;
-  created_at: string;
-  updated_at: string;
+  views: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export async function getNews(limit: number = 10, offset: number = 0) {
   const { data, error } = await supabase
     .from('news')
-    .select('*, author:author_id(id, username, avatar_url)')
+    .select('*, author:users!news_author_id_fkey(id, username, avatar_url)')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) throw error;
-  return data as NewsArticle[];
+  return (data || []) as NewsArticle[];
 }
 
 export async function getNewsArticle(slug: string) {
   const { data, error } = await supabase
     .from('news')
-    .select('*, author:author_id(id, username, avatar_url)')
+    .select('*, author:users!news_author_id_fkey(id, username, avatar_url)')
     .eq('slug', slug)
     .single();
 
@@ -49,14 +49,12 @@ export async function getNewsArticle(slug: string) {
   return data as NewsArticle;
 }
 
-export async function createNews(article: Omit<NewsArticle, 'id' | 'created_at' | 'updated_at' | 'views'>) {
+export async function createNews(article: Omit<NewsArticle, 'id' | 'created_at' | 'updated_at' | 'views' | 'author'>) {
   const { data, error } = await supabase
     .from('news')
     .insert({
       ...article,
       views: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -69,8 +67,11 @@ export async function updateNews(id: string, updates: Partial<NewsArticle>) {
   const { data, error } = await supabase
     .from('news')
     .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
+      title: updates.title,
+      content: updates.content,
+      excerpt: updates.excerpt,
+      image_url: updates.image_url,
+      slug: updates.slug,
     })
     .eq('id', id)
     .select()

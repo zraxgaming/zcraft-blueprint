@@ -1,10 +1,10 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminSettings {
   id: string;
   key: string;
   value: string;
-  updated_at: string;
+  updated_at: string | null;
 }
 
 export async function getSettings() {
@@ -13,7 +13,7 @@ export async function getSettings() {
     .select('*');
 
   if (error) throw error;
-  return data as AdminSettings[];
+  return (data || []) as AdminSettings[];
 }
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -28,7 +28,12 @@ export async function getSetting(key: string): Promise<string | null> {
 }
 
 export async function setSetting(key: string, value: string) {
-  const existing = await getSetting(key);
+  // Check if setting exists
+  const { data: existing } = await supabase
+    .from('admin_settings')
+    .select('id')
+    .eq('key', key)
+    .single();
 
   if (existing) {
     const { error } = await supabase
@@ -43,7 +48,6 @@ export async function setSetting(key: string, value: string) {
       .insert({
         key,
         value,
-        updated_at: new Date().toISOString(),
       });
 
     if (error) throw error;
@@ -57,3 +61,11 @@ export async function getDiscordLink(): Promise<string | null> {
 export async function setDiscordLink(link: string) {
   await setSetting('discord_link', link);
 }
+
+export const settingsService = {
+  getSettings,
+  getSetting,
+  setSetting,
+  getDiscordLink,
+  setDiscordLink,
+};

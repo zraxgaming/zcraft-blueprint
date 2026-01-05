@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Calendar, 
   Plus, 
@@ -7,7 +7,9 @@ import {
   Trash2,
   Eye,
   Users,
-  Clock
+  Clock,
+  Loader,
+  MapPin
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,20 +31,107 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdminLayout from "@/components/admin/AdminLayout";
-
-const events = [
-  { id: 1, title: "Summer Build Contest", date: "2024-07-15", time: "3:00 PM", status: "upcoming", participants: 234, prize: "$500 Store Credit" },
-  { id: 2, title: "PvP Tournament", date: "2024-07-10", time: "6:00 PM", status: "upcoming", participants: 128, prize: "Champion Title" },
-  { id: 3, title: "Treasure Hunt", date: "2024-07-05", time: "2:00 PM", status: "upcoming", participants: 89, prize: "Rare Items" },
-  { id: 4, title: "Spring Festival", date: "2024-05-20", time: "4:00 PM", status: "completed", participants: 456, prize: "Festival Cape" },
-  { id: 5, title: "Speedrun Challenge", date: "2024-05-10", time: "5:00 PM", status: "completed", participants: 67, prize: "Speed Boots" },
-];
+import { eventService, Event } from "@/services/eventService";
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminEventsPage() {
+  const { isAdmin } = useAuth();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  
+  // Form state
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState("");
 
-  const upcomingEvents = events.filter(e => e.status === "upcoming");
-  const completedEvents = events.filter(e => e.status === "completed");
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const data = await eventService.getEvents(50, 0);
+      setEvents(data);
+    } catch (err: any) {
+      console.error('Error loading events:', err);
+      toast({ title: "Error", description: "Failed to load events" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!title || !description || !date || !location) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields" });
+      return;
+    }
+
+    try {
+      setCreating(true);
+      const dateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
+      
+      await eventService.createEvent({
+        title,
+        description,
+        date: new Date(dateTime).toISOString(),
+        location,
+        max_players: maxPlayers ? parseInt(maxPlayers) : null,
+        image_url: null,
+      });
+      
+      toast({ title: "Success", description: "Event created successfully" });
+      setIsCreateOpen(false);
+      resetForm();
+      loadEvents();
+    } catch (err: any) {
+      console.error('Error creating event:', err);
+      toast({ title: "Error", description: err?.message || "Failed to create event" });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    
+    try {
+      await eventService.deleteEvent(id);
+      toast({ title: "Success", description: "Event deleted" });
+      loadEvents();
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to delete event" });
+    }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setDate("");
+    setTime("");
+    setLocation("");
+    setMaxPlayers("");
+  };
+
+  const now = new Date();
+  const upcomingEvents = events.filter(e => new Date(e.date) >= now);
+  const pastEvents = events.filter(e => new Date(e.date) < now);
+
+  if (loading) {
+    return (
+      <AdminLayout title="Events Management">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Events Management">
@@ -62,30 +151,64 @@ export default function AdminEventsPage() {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
-                  <Label>Event Title</Label>
-                  <Input placeholder="Enter event title..." />
+                  <Label>Event Title *</Label>
+                  <Input 
+                    placeholder="Enter event title..." 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Date</Label>
-                    <Input type="date" />
+                    <Label>Date *</Label>
+                    <Input 
+                      type="date" 
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Time</Label>
-                    <Input type="time" />
+                    <Input 
+                      type="time" 
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Location *</Label>
+                    <Input 
+                      placeholder="e.g., Spawn Arena" 
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Max Players</Label>
+                    <Input 
+                      type="number" 
+                      placeholder="Unlimited"
+                      value={maxPlayers}
+                      onChange={(e) => setMaxPlayers(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Prize</Label>
-                  <Input placeholder="e.g., $100 Store Credit" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea placeholder="Describe the event..." rows={4} />
+                  <Label>Description *</Label>
+                  <Textarea 
+                    placeholder="Describe the event..." 
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                  <Button className="btn-primary-gradient">Create</Button>
+                  <Button className="btn-primary-gradient" onClick={handleCreate} disabled={creating}>
+                    {creating ? 'Creating...' : 'Create'}
+                  </Button>
                 </div>
               </div>
             </DialogContent>
@@ -96,9 +219,9 @@ export default function AdminEventsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
             { label: "Upcoming Events", value: upcomingEvents.length.toString() },
-            { label: "Total Participants", value: "1.2K" },
-            { label: "Events This Month", value: "8" },
-            { label: "Completed Events", value: "45" },
+            { label: "Total Participants", value: events.reduce((sum, e) => sum + (e.registered_count || 0), 0).toString() },
+            { label: "This Month", value: events.filter(e => new Date(e.date).getMonth() === now.getMonth()).length.toString() },
+            { label: "Completed", value: pastEvents.length.toString() },
           ].map((stat) => (
             <Card key={stat.label}>
               <CardContent className="p-4">
@@ -114,37 +237,42 @@ export default function AdminEventsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
-              Upcoming Events
+              Upcoming Events ({upcomingEvents.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingEvents.map((event) => (
-              <div key={event.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-                    <span className="text-xs text-primary font-medium">
-                      {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
-                    </span>
-                    <span className="text-lg font-bold text-primary">
-                      {new Date(event.date).getDate()}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-lg">{event.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {event.time}
+            {upcomingEvents.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No upcoming events</p>
+            ) : (
+              upcomingEvents.map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
+                      <span className="text-xs text-primary font-medium">
+                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        {event.participants} signed up
+                      <span className="text-lg font-bold text-primary">
+                        {new Date(event.date).getDate()}
                       </span>
                     </div>
+                    <div>
+                      <h3 className="font-medium text-lg">{event.title}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-4 w-4" />
+                          {event.location}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          {event.registered_count || 0} / {event.max_players || '∞'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge className="bg-primary/10 text-primary">{event.prize}</Badge>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -160,40 +288,44 @@ export default function AdminEventsPage() {
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(event.id)}>
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Cancel Event
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Past Events */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Completed Events</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {completedEvents.map((event) => (
-              <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
+        {pastEvents.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Completed Events</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pastEvents.slice(0, 5).map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">{event.title}</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.date).toLocaleDateString()} • {event.registered_count || 0} participants
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium">{event.title}</h4>
-                    <p className="text-xs text-muted-foreground">{event.date} • {event.participants} participants</p>
-                  </div>
+                  <Badge variant="secondary">{event.location}</Badge>
                 </div>
-                <Badge variant="secondary">{event.prize}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );
