@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Author {
   id: string;
@@ -12,10 +12,10 @@ export interface Forum {
   slug: string;
   description: string;
   category: string;
-  post_count: number;
-  reply_count: number;
+  post_count: number | null;
+  reply_count: number | null;
   last_post_date: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface ForumPost {
@@ -25,10 +25,10 @@ export interface ForumPost {
   author?: Author;
   title: string;
   content: string;
-  views: number;
-  replies: number;
-  created_at: string;
-  updated_at: string;
+  views: number | null;
+  replies: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export async function getForums() {
@@ -38,7 +38,7 @@ export async function getForums() {
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as Forum[];
+  return (data || []) as Forum[];
 }
 
 export async function getForumBySlug(slug: string) {
@@ -52,27 +52,72 @@ export async function getForumBySlug(slug: string) {
   return data as Forum;
 }
 
+export async function getForumById(id: string) {
+  const { data, error } = await supabase
+    .from('forums')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data as Forum;
+}
+
 export async function getForumPosts(forumId: string, limit: number = 20, offset: number = 0) {
   const { data, error } = await supabase
     .from('forum_posts')
-    .select('*, author:author_id(id, username, avatar_url)')
+    .select('*, author:users!forum_posts_author_id_fkey(id, username, avatar_url)')
     .eq('forum_id', forumId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error) throw error;
-  return data as ForumPost[];
+  return (data || []) as ForumPost[];
 }
 
-export async function createForumPost(post: Omit<ForumPost, 'id' | 'created_at' | 'updated_at' | 'views' | 'replies'>) {
+export async function createForum(forum: Omit<Forum, 'id' | 'created_at' | 'post_count' | 'reply_count' | 'last_post_date'>) {
+  const { data, error } = await supabase
+    .from('forums')
+    .insert({
+      ...forum,
+      post_count: 0,
+      reply_count: 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Forum;
+}
+
+export async function updateForum(id: string, updates: Partial<Forum>) {
+  const { data, error } = await supabase
+    .from('forums')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Forum;
+}
+
+export async function deleteForum(id: string) {
+  const { error } = await supabase
+    .from('forums')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function createForumPost(post: Omit<ForumPost, 'id' | 'created_at' | 'updated_at' | 'views' | 'replies' | 'author'>) {
   const { data, error } = await supabase
     .from('forum_posts')
     .insert({
       ...post,
       views: 0,
       replies: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -80,12 +125,17 @@ export async function createForumPost(post: Omit<ForumPost, 'id' | 'created_at' 
   if (error) throw error;
 
   // Update forum post count
-  const forum = await getForumBySlug((await supabase.from('forums').select('slug').eq('id', post.forum_id)).data?.[0]?.slug);
-  if (forum) {
+  const { data: forumData } = await supabase
+    .from('forums')
+    .select('post_count')
+    .eq('id', post.forum_id)
+    .single();
+
+  if (forumData) {
     await supabase
       .from('forums')
       .update({
-        post_count: forum.post_count + 1,
+        post_count: (forumData.post_count || 0) + 1,
         last_post_date: new Date().toISOString(),
       })
       .eq('id', post.forum_id);
@@ -98,8 +148,8 @@ export async function updateForumPost(id: string, updates: Partial<ForumPost>) {
   const { data, error } = await supabase
     .from('forum_posts')
     .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
+      title: updates.title,
+      content: updates.content,
     })
     .eq('id', id)
     .select()
@@ -121,15 +171,11 @@ export async function deleteForumPost(id: string) {
 export async function getCategories() {
   const { data, error } = await supabase
     .from('forums')
-    .select('category')
-    .order('category', { ascending: true });
+    .select('category');
 
   if (error) throw error;
   
-  // Group by unique categories
-  const uniqueCategories = Array.from(new Map(
-    (data || []).map((forum: any) => [forum.category, forum.category])
-  ).values());
+  const uniqueCategories = [...new Set((data || []).map(f => f.category))];
 
   return uniqueCategories.map((category: string) => ({
     id: category.toLowerCase().replace(/\s+/g, '-'),
@@ -141,7 +187,7 @@ export async function getCategories() {
 export async function getLatestThreads(limit: number = 10) {
   const { data, error } = await supabase
     .from('forum_posts')
-    .select('id, title, author:author_id(username), forum:forum_id(title), replies, created_at')
+    .select('id, title, replies, created_at, author:users!forum_posts_author_id_fkey(username), forum:forums!forum_posts_forum_id_fkey(title)')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -159,7 +205,7 @@ export async function getLatestThreads(limit: number = 10) {
 export async function getAllThreads(limit: number = 50) {
   const { data, error } = await supabase
     .from('forum_posts')
-    .select('id, title, author:author_id(username), forum:forum_id(title), replies, created_at')
+    .select('id, title, replies, created_at, author:users!forum_posts_author_id_fkey(username), forum:forums!forum_posts_forum_id_fkey(title)')
     .order('created_at', { ascending: false })
     .limit(limit);
 
@@ -176,8 +222,12 @@ export async function getAllThreads(limit: number = 50) {
 
 export const forumService = {
   getForums,
+  getForumById,
   getForumBySlug,
   getForumPosts,
+  createForum,
+  updateForum,
+  deleteForum,
   createForumPost,
   updateForumPost,
   deleteForumPost,

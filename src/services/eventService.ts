@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Event {
   id: string;
@@ -8,8 +8,8 @@ export interface Event {
   location: string;
   image_url: string | null;
   max_players: number | null;
-  registered_count: number;
-  created_at: string;
+  registered_count: number | null;
+  created_at: string | null;
 }
 
 export async function getEvents(limit: number = 10, offset: number = 0) {
@@ -20,7 +20,7 @@ export async function getEvents(limit: number = 10, offset: number = 0) {
     .range(offset, offset + limit - 1);
 
   if (error) throw error;
-  return data as Event[];
+  return (data || []) as Event[];
 }
 
 export async function getUpcomingEvents(limit: number = 5) {
@@ -33,7 +33,7 @@ export async function getUpcomingEvents(limit: number = 5) {
     .limit(limit);
 
   if (error) throw error;
-  return data as Event[];
+  return (data || []) as Event[];
 }
 
 export async function getEvent(id: string) {
@@ -53,7 +53,6 @@ export async function createEvent(event: Omit<Event, 'id' | 'created_at' | 'regi
     .insert({
       ...event,
       registered_count: 0,
-      created_at: new Date().toISOString(),
     })
     .select()
     .single();
@@ -85,7 +84,7 @@ export async function deleteEvent(id: string) {
 
 export async function registerForEvent(eventId: string) {
   const event = await getEvent(eventId);
-  const newCount = event.registered_count + 1;
+  const newCount = (event.registered_count || 0) + 1;
 
   if (event.max_players && newCount > event.max_players) {
     throw new Error('Event is full');
@@ -96,7 +95,7 @@ export async function registerForEvent(eventId: string) {
 
 export async function unregisterFromEvent(eventId: string) {
   const event = await getEvent(eventId);
-  return updateEvent(eventId, { registered_count: Math.max(0, event.registered_count - 1) });
+  return updateEvent(eventId, { registered_count: Math.max(0, (event.registered_count || 0) - 1) });
 }
 
 export async function getPastEvents(limit: number = 5) {
@@ -109,7 +108,7 @@ export async function getPastEvents(limit: number = 5) {
     .limit(limit);
 
   if (error) throw error;
-  return data as Event[];
+  return (data || []) as Event[];
 }
 
 export const eventService = {
