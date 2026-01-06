@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
-  Settings, 
   Globe, 
   Bell, 
   Shield, 
   Palette,
   Server,
-  Save
+  Save,
+  Loader
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,114 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { settingsService } from "@/services/settingsService";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AdminSettingsPage() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // General settings
+  const [serverName, setServerName] = useState("ZCraft Network");
+  const [serverIp, setServerIp] = useState("play.zcraft.net");
+  const [serverDescription, setServerDescription] = useState("");
+  const [discordUrl, setDiscordUrl] = useState("");
+  const [storeUrl, setStoreUrl] = useState("");
+
+  // Site status
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [announcementEnabled, setAnnouncementEnabled] = useState(true);
+  const [announcementEnabled, setAnnouncementEnabled] = useState(false);
+  const [announcementMessage, setAnnouncementMessage] = useState("");
+
+  // Security
   const [registrationEnabled, setRegistrationEnabled] = useState(true);
   const [emailVerification, setEmailVerification] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const settings = await settingsService.getSettings();
+      const settingsMap = new Map(settings.map(s => [s.key, s.value]));
+
+      setServerName(settingsMap.get('server_name') || 'ZCraft Network');
+      setServerIp(settingsMap.get('server_ip') || 'play.zcraft.net');
+      setServerDescription(settingsMap.get('server_description') || '');
+      setDiscordUrl(settingsMap.get('discord_link') || '');
+      setStoreUrl(settingsMap.get('store_url') || '');
+      setMaintenanceMode(settingsMap.get('maintenance_mode') === 'true');
+      setAnnouncementEnabled(settingsMap.get('announcement_enabled') === 'true');
+      setAnnouncementMessage(settingsMap.get('announcement_message') || '');
+      setRegistrationEnabled(settingsMap.get('registration_enabled') !== 'false');
+      setEmailVerification(settingsMap.get('email_verification') !== 'false');
+    } catch (err: any) {
+      console.error('Error loading settings:', err);
+      toast({ title: "Error", description: "Failed to load settings", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveGeneralSettings = async () => {
+    try {
+      setSaving(true);
+      await Promise.all([
+        settingsService.setSetting('server_name', serverName),
+        settingsService.setSetting('server_ip', serverIp),
+        settingsService.setSetting('server_description', serverDescription),
+        settingsService.setSetting('discord_link', discordUrl),
+        settingsService.setSetting('store_url', storeUrl),
+      ]);
+      toast({ title: "Success", description: "General settings saved" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveSiteStatus = async () => {
+    try {
+      setSaving(true);
+      await Promise.all([
+        settingsService.setSetting('maintenance_mode', maintenanceMode.toString()),
+        settingsService.setSetting('announcement_enabled', announcementEnabled.toString()),
+        settingsService.setSetting('announcement_message', announcementMessage),
+      ]);
+      toast({ title: "Success", description: "Site status saved" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveSecuritySettings = async () => {
+    try {
+      setSaving(true);
+      await Promise.all([
+        settingsService.setSetting('registration_enabled', registrationEnabled.toString()),
+        settingsService.setSetting('email_verification', emailVerification.toString()),
+      ]);
+      toast({ title: "Success", description: "Security settings saved" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Settings">
+        <div className="flex items-center justify-center py-20">
+          <Loader className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Settings">
@@ -58,24 +160,24 @@ export default function AdminSettingsPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Server Name</Label>
-                  <Input defaultValue="ZCraft Network" />
+                  <Input value={serverName} onChange={(e) => setServerName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Server IP</Label>
-                  <Input defaultValue="play.zcraft.net" />
+                  <Input value={serverIp} onChange={(e) => setServerIp(e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Server Description</Label>
-                <Textarea defaultValue="The ultimate Minecraft survival experience. Build, explore, and conquer with thousands of players." rows={3} />
+                <Textarea value={serverDescription} onChange={(e) => setServerDescription(e.target.value)} rows={3} />
               </div>
               <div className="space-y-2">
                 <Label>Discord Invite URL</Label>
-                <Input defaultValue="https://discord.gg/zcraft" />
+                <Input value={discordUrl} onChange={(e) => setDiscordUrl(e.target.value)} placeholder="https://discord.gg/..." />
               </div>
               <div className="space-y-2">
-                <Label>Store URL (Tebex)</Label>
-                <Input defaultValue="https://store.zcraft.net" />
+                <Label>Store URL</Label>
+                <Input value={storeUrl} onChange={(e) => setStoreUrl(e.target.value)} placeholder="https://store.example.com" />
               </div>
             </CardContent>
           </Card>
@@ -107,16 +209,23 @@ export default function AdminSettingsPage() {
               {announcementEnabled && (
                 <div className="space-y-2 pl-4 border-l-2 border-primary">
                   <Label>Banner Message</Label>
-                  <Input defaultValue="🎉 Summer Event starts July 15th! Join now for exclusive rewards!" />
+                  <Input 
+                    value={announcementMessage} 
+                    onChange={(e) => setAnnouncementMessage(e.target.value)}
+                    placeholder="🎉 Special announcement here!"
+                  />
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="flex justify-end">
-            <Button className="btn-primary-gradient gap-2">
+          <div className="flex justify-end gap-2">
+            <Button className="btn-primary-gradient gap-2" onClick={saveGeneralSettings} disabled={saving}>
               <Save className="h-4 w-4" />
-              Save Changes
+              {saving ? 'Saving...' : 'Save General Settings'}
+            </Button>
+            <Button variant="outline" onClick={saveSiteStatus} disabled={saving}>
+              Save Site Status
             </Button>
           </div>
         </TabsContent>
@@ -179,40 +288,30 @@ export default function AdminSettingsPage() {
                 <Bell className="h-5 w-5 text-primary" />
                 Email Notifications
               </CardTitle>
-              <CardDescription>Configure email settings</CardDescription>
+              <CardDescription>Configure email settings (coming soon)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>SMTP Host</Label>
-                  <Input placeholder="smtp.example.com" />
+                  <Input placeholder="smtp.example.com" disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>SMTP Port</Label>
-                  <Input placeholder="587" />
+                  <Input placeholder="587" disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>SMTP Username</Label>
-                  <Input placeholder="user@example.com" />
+                  <Input placeholder="user@example.com" disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>SMTP Password</Label>
-                  <Input type="password" placeholder="••••••••" />
+                  <Input type="password" placeholder="••••••••" disabled />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>From Email</Label>
-                <Input defaultValue="noreply@zcraft.net" />
-              </div>
+              <p className="text-sm text-muted-foreground">Email notifications will be configured through Supabase.</p>
             </CardContent>
           </Card>
-
-          <div className="flex justify-end">
-            <Button className="btn-primary-gradient gap-2">
-              <Save className="h-4 w-4" />
-              Save Changes
-            </Button>
-          </div>
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
@@ -247,37 +346,18 @@ export default function AdminSettingsPage() {
                 <div className="space-y-1">
                   <Label className="text-base font-medium">Two-Factor Authentication</Label>
                   <p className="text-sm text-muted-foreground">
-                    Require 2FA for admin accounts
+                    Require 2FA for admin accounts (coming soon)
                   </p>
                 </div>
-                <Switch />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Rate Limiting</CardTitle>
-              <CardDescription>Protect against abuse</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Login Attempts (per hour)</Label>
-                  <Input type="number" defaultValue="10" />
-                </div>
-                <div className="space-y-2">
-                  <Label>API Requests (per minute)</Label>
-                  <Input type="number" defaultValue="60" />
-                </div>
+                <Switch disabled />
               </div>
             </CardContent>
           </Card>
 
           <div className="flex justify-end">
-            <Button className="btn-primary-gradient gap-2">
+            <Button className="btn-primary-gradient gap-2" onClick={saveSecuritySettings} disabled={saving}>
               <Save className="h-4 w-4" />
-              Save Changes
+              {saving ? 'Saving...' : 'Save Security Settings'}
             </Button>
           </div>
         </TabsContent>
