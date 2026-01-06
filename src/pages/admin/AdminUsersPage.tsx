@@ -6,10 +6,9 @@ import {
   Shield, 
   Ban, 
   Mail,
-  ChevronLeft,
-  ChevronRight,
   Filter,
-  Loader
+  Loader,
+  Check
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,6 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -46,6 +53,9 @@ export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -55,7 +65,6 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       
-      // Fetch users with their roles
       const { data: usersData, error: usersError } = await supabase
         .from("users")
         .select("id, username, email, avatar_url, created_at")
@@ -63,7 +72,6 @@ export default function AdminUsersPage() {
 
       if (usersError) throw usersError;
 
-      // Fetch roles for all users
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("user_id, role");
@@ -78,9 +86,74 @@ export default function AdminUsersPage() {
       );
     } catch (err: any) {
       console.error('Error loading users:', err);
-      toast({ title: "Error", description: "Failed to load users" });
+      toast({ title: "Error", description: "Failed to load users", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangeRole = async (userId: string, newRole: 'admin' | 'moderator' | 'user') => {
+    try {
+      setUpdating(true);
+      
+      // Check if role exists
+      const { data: existingRole } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (existingRole) {
+        // Update existing role
+        const { error } = await supabase
+          .from("user_roles")
+          .update({ role: newRole })
+          .eq("user_id", userId);
+        
+        if (error) throw error;
+      } else {
+        // Insert new role
+        const { error } = await supabase
+          .from("user_roles")
+          .insert({ user_id: userId, role: newRole });
+        
+        if (error) throw error;
+      }
+
+      // Also update the users table role column for backwards compatibility
+      await supabase
+        .from("users")
+        .update({ role: newRole })
+        .eq("id", userId);
+
+      toast({ title: "Success", description: `Role updated to ${newRole}` });
+      setIsRoleDialogOpen(false);
+      setSelectedUser(null);
+      loadUsers();
+    } catch (err: any) {
+      console.error('Error updating role:', err);
+      toast({ title: "Error", description: err?.message || "Failed to update role", variant: "destructive" });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, username: string) => {
+    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) return;
+
+    try {
+      const { error } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      toast({ title: "Success", description: "User deleted successfully" });
+      loadUsers();
+    } catch (err: any) {
+      console.error('Error deleting user:', err);
+      toast({ title: "Error", description: err?.message || "Failed to delete user", variant: "destructive" });
     }
   };
 
@@ -216,7 +289,7 @@ export default function AdminUsersPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { setSelectedUser(user); setIsRoleDialogOpen(true); }}>
                                 <Shield className="h-4 w-4 mr-2" />
                                 Change Role
                               </DropdownMenuItem>
@@ -224,9 +297,13 @@ export default function AdminUsersPage() {
                                 <Mail className="h-4 w-4 mr-2" />
                                 Send Email
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => handleDeleteUser(user.id, user.username)}
+                              >
                                 <Ban className="h-4 w-4 mr-2" />
-                                Ban User
+                                Delete User
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -240,6 +317,35 @@ export default function AdminUsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Change Role Dialog */}
+      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change User Role</DialogTitle>
+            <DialogDescription>
+              Select a new role for {selectedUser?.username}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-4">
+            {(['admin', 'moderator', 'user'] as const).map((role) => (
+              <Button
+                key={role}
+                variant={selectedUser?.role === role ? "default" : "outline"}
+                className="w-full justify-between capitalize"
+                onClick={() => selectedUser && handleChangeRole(selectedUser.id, role)}
+                disabled={updating}
+              >
+                <span className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  {role}
+                </span>
+                {selectedUser?.role === role && <Check className="h-4 w-4" />}
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

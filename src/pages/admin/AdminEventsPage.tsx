@@ -25,7 +25,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -33,14 +32,16 @@ import { Textarea } from "@/components/ui/textarea";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { eventService, Event } from "@/services/eventService";
 import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminEventsPage() {
-  const { isAdmin } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  // Dialog state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   
   // Form state
   const [title, setTitle] = useState("");
@@ -49,6 +50,7 @@ export default function AdminEventsPage() {
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     loadEvents();
@@ -61,52 +63,9 @@ export default function AdminEventsPage() {
       setEvents(data);
     } catch (err: any) {
       console.error('Error loading events:', err);
-      toast({ title: "Error", description: "Failed to load events" });
+      toast({ title: "Error", description: "Failed to load events", variant: "destructive" });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!title || !description || !date || !location) {
-      toast({ title: "Missing fields", description: "Please fill in all required fields" });
-      return;
-    }
-
-    try {
-      setCreating(true);
-      const dateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
-      
-      await eventService.createEvent({
-        title,
-        description,
-        date: new Date(dateTime).toISOString(),
-        location,
-        max_players: maxPlayers ? parseInt(maxPlayers) : null,
-        image_url: null,
-      });
-      
-      toast({ title: "Success", description: "Event created successfully" });
-      setIsCreateOpen(false);
-      resetForm();
-      loadEvents();
-    } catch (err: any) {
-      console.error('Error creating event:', err);
-      toast({ title: "Error", description: err?.message || "Failed to create event" });
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
-    
-    try {
-      await eventService.deleteEvent(id);
-      toast({ title: "Success", description: "Event deleted" });
-      loadEvents();
-    } catch (err: any) {
-      toast({ title: "Error", description: err?.message || "Failed to delete event" });
     }
   };
 
@@ -117,6 +76,95 @@ export default function AdminEventsPage() {
     setTime("");
     setLocation("");
     setMaxPlayers("");
+    setImageUrl("");
+    setEditingEvent(null);
+  };
+
+  const handleCreate = async () => {
+    if (!title || !description || !date || !location) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields" });
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const dateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
+      
+      await eventService.createEvent({
+        title,
+        description,
+        date: new Date(dateTime).toISOString(),
+        location,
+        max_players: maxPlayers ? parseInt(maxPlayers) : null,
+        image_url: imageUrl || null,
+      });
+      
+      toast({ title: "Success", description: "Event created successfully" });
+      setIsCreateOpen(false);
+      resetForm();
+      loadEvents();
+    } catch (err: any) {
+      console.error('Error creating event:', err);
+      toast({ title: "Error", description: err?.message || "Failed to create event", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editingEvent || !title || !description || !date || !location) {
+      toast({ title: "Missing fields", description: "Please fill in all required fields" });
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const dateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
+      
+      await eventService.updateEvent(editingEvent.id, {
+        title,
+        description,
+        date: new Date(dateTime).toISOString(),
+        location,
+        max_players: maxPlayers ? parseInt(maxPlayers) : null,
+        image_url: imageUrl || null,
+      });
+      
+      toast({ title: "Success", description: "Event updated successfully" });
+      setIsEditOpen(false);
+      resetForm();
+      loadEvents();
+    } catch (err: any) {
+      console.error('Error updating event:', err);
+      toast({ title: "Error", description: err?.message || "Failed to update event", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string, eventTitle: string) => {
+    if (!confirm(`Delete "${eventTitle}"?`)) return;
+    
+    try {
+      await eventService.deleteEvent(id);
+      toast({ title: "Success", description: "Event deleted" });
+      loadEvents();
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to delete event", variant: "destructive" });
+    }
+  };
+
+  const openEditDialog = (event: Event) => {
+    setEditingEvent(event);
+    setTitle(event.title);
+    setDescription(event.description);
+    const eventDate = new Date(event.date);
+    setDate(eventDate.toISOString().split('T')[0]);
+    setTime(eventDate.toTimeString().slice(0, 5));
+    setLocation(event.location);
+    setMaxPlayers(event.max_players?.toString() || "");
+    setImageUrl(event.image_url || "");
+    setIsEditOpen(true);
   };
 
   const now = new Date();
@@ -133,86 +181,88 @@ export default function AdminEventsPage() {
     );
   }
 
+  const EventForm = ({ onSubmit, submitLabel }: { onSubmit: () => void; submitLabel: string }) => (
+    <div className="space-y-4 pt-4">
+      <div className="space-y-2">
+        <Label>Event Title *</Label>
+        <Input 
+          placeholder="Enter event title..." 
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Date *</Label>
+          <Input 
+            type="date" 
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Time</Label>
+          <Input 
+            type="time" 
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Location *</Label>
+          <Input 
+            placeholder="e.g., Spawn Arena" 
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Max Players</Label>
+          <Input 
+            type="number" 
+            placeholder="Unlimited"
+            value={maxPlayers}
+            onChange={(e) => setMaxPlayers(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Image URL</Label>
+        <Input 
+          placeholder="https://..." 
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label>Description *</Label>
+        <Textarea 
+          placeholder="Describe the event..." 
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => { setIsCreateOpen(false); setIsEditOpen(false); }}>Cancel</Button>
+        <Button className="btn-primary-gradient" onClick={onSubmit} disabled={saving}>
+          {saving ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <AdminLayout title="Events Management">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-end">
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="btn-primary-gradient gap-2">
-                <Plus className="h-4 w-4" />
-                Create Event
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Event</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Event Title *</Label>
-                  <Input 
-                    placeholder="Enter event title..." 
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Date *</Label>
-                    <Input 
-                      type="date" 
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Time</Label>
-                    <Input 
-                      type="time" 
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Location *</Label>
-                    <Input 
-                      placeholder="e.g., Spawn Arena" 
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Max Players</Label>
-                    <Input 
-                      type="number" 
-                      placeholder="Unlimited"
-                      value={maxPlayers}
-                      onChange={(e) => setMaxPlayers(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Description *</Label>
-                  <Textarea 
-                    placeholder="Describe the event..." 
-                    rows={4}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                  <Button className="btn-primary-gradient" onClick={handleCreate} disabled={creating}>
-                    {creating ? 'Creating...' : 'Create'}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button className="btn-primary-gradient gap-2" onClick={() => { resetForm(); setIsCreateOpen(true); }}>
+            <Plus className="h-4 w-4" />
+            Create Event
+          </Button>
         </div>
 
         {/* Stats */}
@@ -280,15 +330,15 @@ export default function AdminEventsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => window.open(`/events`, '_blank')}>
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openEditDialog(event)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(event.id)}>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(event.id, event.title)}>
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
@@ -304,10 +354,10 @@ export default function AdminEventsPage() {
         {pastEvents.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Completed Events</CardTitle>
+              <CardTitle>Completed Events ({pastEvents.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {pastEvents.slice(0, 5).map((event) => (
+              {pastEvents.slice(0, 10).map((event) => (
                 <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
@@ -327,6 +377,26 @@ export default function AdminEventsPage() {
           </Card>
         )}
       </div>
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Event</DialogTitle>
+          </DialogHeader>
+          <EventForm onSubmit={handleCreate} submitLabel="Create Event" />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          <EventForm onSubmit={handleEdit} submitLabel="Save Changes" />
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
