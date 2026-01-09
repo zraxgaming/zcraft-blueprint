@@ -212,7 +212,7 @@ The admin can set the Discord server invite link via the admin panel. This link 
 **Implementation:**
 ```typescript
 // Set Discord link
-await settingsService.setDiscordLink('https://discord.gg/your-invite-code');
+await settingsService.setDiscordLink('https://discord.gg/xpfJW7ZZAt');
 
 // Get Discord link (when accessing /discord)
 const link = await settingsService.getDiscordLink();

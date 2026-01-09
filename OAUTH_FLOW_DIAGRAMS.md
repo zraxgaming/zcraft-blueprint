@@ -374,7 +374,7 @@
 └──────────────────────────────────┘
          │
          │ Admin enters:
-         │ "https://discord.gg/abc123"
+         │ "https://discord.gg/xpfJW7ZZAt"
          │
          ↓
 ┌──────────────────────────────────────────┐
@@ -398,7 +398,7 @@
 │ admin_settings table                     │
 │ ┌──────────────────────────────────────┐ │
 │ │ id | key           | value           │ │
-│ │ 1  | discord_link  | discord.gg/...  │ │
+│ │ 1  | discord_link  | https://discord.gg/xpfJW7ZZAt  │ │
 │ └──────────────────────────────────────┘ │
 └──────────────────────────────────────────┘
          │
