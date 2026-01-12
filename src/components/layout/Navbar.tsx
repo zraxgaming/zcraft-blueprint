@@ -12,7 +12,11 @@ const navLinks = [
   { name: "News", path: "/news" },
   { name: "Wiki", path: "/wiki" },
   { name: "Rules", path: "/rules" },
-  { name: "Status", path: "/status" },
+  {
+    name: "Status",
+    path: "https://status.z-craft.xyz",
+    external: true,
+  },
 ];
 
 export function Navbar() {
