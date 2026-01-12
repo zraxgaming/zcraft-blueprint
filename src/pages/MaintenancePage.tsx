@@ -35,7 +35,7 @@ export default function MaintenancePage() {
               </a>
             </Button>
             <Button className="w-full btn-primary-gradient" asChild>
-              <a href="https://status.zcraft.net" target="_blank" rel="noopener noreferrer">
+              <a href="https://status.z-craft.xyz" target="_blank" rel="noopener noreferrer">
                 Check Status Page
               </a>
             </Button>
