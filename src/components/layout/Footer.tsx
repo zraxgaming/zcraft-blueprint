@@ -5,7 +5,11 @@ const footerLinks = {
   Server: [
     { name: "Home", path: "/" },
     { name: "Play", path: "/play" },
-    { name: "Status", path: "/status" },
+    {
+      name: "Status",
+      path: "https://status.z-craft.xyz",
+      external: true,
+    },
     { name: "Rules", path: "/rules" },
   ],
   Community: [
