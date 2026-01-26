@@ -10,14 +10,12 @@ import ForumsPage from "./pages/ForumsPage";
 import ForumThreadPage from "./pages/ForumThreadPage";
 import NewsPage from "./pages/NewsPage";
 import NewsArticlePage from "./pages/NewsArticlePage";
-import WikiPage from "./pages/WikiPage";
-import WikiArticlePage from "./pages/WikiArticlePage";
 import RulesPage from "./pages/RulesPage";
 import SupportPage from "./pages/SupportPage";
 import StatusPage from "./pages/StatusPage";
 import StorePage from "./pages/StorePage";
 import StaffPage from "./pages/StaffPage";
-import EventsPage from "./pages/EventsPage";
+import EventsPage from "./pages/ChangelogsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import LoginPage from "./pages/LoginPage";
@@ -30,7 +28,7 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminNewsPage from "./pages/admin/AdminNewsPage";
 import AdminForumsPage from "./pages/admin/AdminForumsPage";
 import AdminWikiPage from "./pages/admin/AdminWikiPage";
-import AdminEventsPage from "./pages/admin/AdminEventsPage";
+import AdminChangelogsPage from "./pages/admin/AdminChangelogsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import MaintenancePage from "./pages/MaintenancePage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
@@ -53,8 +51,6 @@ const App = () => (
             <Route path="/forums/:slug" element={<ForumThreadPage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/news/:slug" element={<NewsArticlePage />} />
-            <Route path="/wiki" element={<WikiPage />} />
-            <Route path="/wiki/:slug" element={<WikiArticlePage />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/support" element={<SupportPage />} />
             <Route path="/status" element={<StatusPage />} />
@@ -74,7 +70,7 @@ const App = () => (
             <Route path="/admin/news" element={<AdminNewsPage />} />
             <Route path="/admin/forums" element={<AdminForumsPage />} />
             <Route path="/admin/wiki" element={<AdminWikiPage />} />
-            <Route path="/admin/events" element={<AdminEventsPage />} />
+            <Route path="/admin/changelogs" element={<AdminChangelogsPage />} />
             <Route path="/admin/settings" element={<AdminSettingsPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />

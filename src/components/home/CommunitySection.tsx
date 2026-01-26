@@ -16,7 +16,7 @@ export function CommunitySection() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [forumPosts, setForumPosts] = useState<ThreadPreview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [discordLink, setDiscordLink] = useState("https://discord.gg/xpfJW7ZZAt");
+  const [discordLink, setDiscordLink] = useState("https://discord.z-craft.xyz");
 
   useEffect(() => {
     const load = async () => {

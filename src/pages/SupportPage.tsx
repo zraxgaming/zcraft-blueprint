@@ -11,6 +11,7 @@ const supportOptions = [
     description: "Submit a support ticket for personalized help from our team.",
     action: "Open Ticket",
     color: "bg-primary/10 text-primary",
+    href: "https://discord.z-craft.xyz",
   },
   {
     icon: Shield,
@@ -18,6 +19,7 @@ const supportOptions = [
     description: "Think you were unfairly punished? Submit an appeal here.",
     action: "Start Appeal",
     color: "bg-amber-500/10 text-amber-600",
+    href: "https://discord.z-craft.xyz",
   },
   {
     icon: MessageSquare,
@@ -25,13 +27,14 @@ const supportOptions = [
     description: "Get real-time support from staff and community members.",
     action: "Join Server",
     color: "bg-indigo-500/10 text-indigo-600",
+    href: "https://discord.z-craft.xyz",
   },
 ];
 
 const faqs = [
   {
     question: "How do I join the server?",
-    answer: "Add play.zcraft.net to your server list in Minecraft. We support both Java (1.8-1.21) and Bedrock editions.",
+    answer: "Add play.zcraftmc.xyz:11339 (Java) or bedrock.zcraftmc.xyz:11339 (Bedrock) to your server list. We support both Java (1.8-1.21) and Bedrock editions.",
   },
   {
     question: "I lost my items, can I get them back?",
@@ -85,10 +88,12 @@ export default function SupportPage() {
                   </div>
                   <h3 className="font-display text-xl font-semibold mb-2">{option.title}</h3>
                   <p className="text-sm text-muted-foreground mb-6">{option.description}</p>
-                  <Button className="w-full gap-2">
-                    {option.action}
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
+                  <a href={option.href} target="_blank" rel="noopener noreferrer" className="block">
+                    <Button className="w-full gap-2">
+                      {option.action}
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
                 </CardContent>
               </Card>
             ))}

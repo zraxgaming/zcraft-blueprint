@@ -13,6 +13,12 @@ interface StaffMember {
   role: string;
   created_at: string;
   avatar_url?: string;
+  minecraft_name?: string;
+}
+
+interface NameMCResponse {
+  name: string;
+  id: string;
 }
 
 interface RoleGroup {
@@ -27,20 +33,54 @@ export default function StaffPage() {
   const [staffGroups, setStaffGroups] = useState<RoleGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [skinCache, setSkinCache] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadStaff();
   }, []);
+
+  const getNameMCSkin = async (username: string): Promise<string> => {
+    // Check cache first
+    if (skinCache[username]) {
+      return skinCache[username];
+    }
+
+    try {
+      const response = await fetch(`https://api.namemc.com/profile/${username}`);
+      if (response.ok) {
+        const data: NameMCResponse = await response.json();
+        const skinUrl = `https://crafatar.com/renders/head/${data.id}?scale=8`;
+        setSkinCache((prev) => ({ ...prev, [username]: skinUrl }));
+        return skinUrl;
+      }
+    } catch (err) {
+      console.error(`Failed to fetch skin for ${username}:`, err);
+    }
+    // Return fallback avatar URL or empty
+    return "";
+  };
 
   const loadStaff = async () => {
     try {
       // Fetch all staff members (users with role other than 'player')
       const { data, error: queryError } = await supabase
         .from("users")
-        .select("id, username, email, role, created_at, avatar_url")
+        .select("id, username, email, role, created_at, avatar_url, minecraft_name")
         .in("role", ["owner", "admin", "moderator", "helper"]);
 
       if (queryError) throw queryError;
+
+      // Fetch skins for all staff members
+      const membersWithSkins = await Promise.all(
+        (data || []).map(async (user: StaffMember) => {
+          const minecraftName = user.minecraft_name || user.username;
+          const skinUrl = await getNameMCSkin(minecraftName);
+          return {
+            ...user,
+            avatar_url: skinUrl || user.avatar_url,
+          };
+        })
+      );
 
       // Group staff by role
       const roleConfig: Record<string, { name: string; icon: LucideIcon; color: string; bgColor: string }> = {
@@ -52,7 +92,7 @@ export default function StaffPage() {
 
       const grouped = Object.entries(roleConfig).map(([roleKey, roleInfo]) => ({
         ...roleInfo,
-        members: (data || []).filter((user: StaffMember) => user.role === roleKey),
+        members: membersWithSkins.filter((user: StaffMember) => user.role === roleKey),
       }));
 
       setStaffGroups(grouped.filter((group) => group.members.length > 0));

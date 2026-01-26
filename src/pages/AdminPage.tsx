@@ -45,7 +45,7 @@ export default function AdminPage() {
     { label: "Total Users", value: "0", change: "+0%", icon: Users },
     { label: "Forum Posts", value: "0", change: "+0%", icon: MessageSquare },
     { label: "Wiki Articles", value: "0", change: "+0%", icon: BookOpen },
-    { label: "Active Events", value: "0", change: "+0", icon: Calendar },
+    { label: "Changelogs", value: "0", change: "+0", icon: Calendar },
   ]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,23 +58,23 @@ export default function AdminPage() {
   const loadDashboardData = async () => {
     try {
       // Fetch all counts in parallel
-      const [usersData, postsData, articlesData, eventsData] = await Promise.all([
+      const [usersData, postsData, articlesData, changelogsData] = await Promise.all([
         supabase.from("users").select("id", { count: "exact", head: true }),
         supabase.from("forum_posts").select("id", { count: "exact", head: true }),
         supabase.from("wiki").select("id", { count: "exact", head: true }),
-        supabase.from("events").select("id", { count: "exact", head: true }),
+        supabase.from("changelogs").select("id", { count: "exact", head: true }),
       ]);
 
       const totalUsers = usersData.count || 0;
       const totalPosts = postsData.count || 0;
       const totalArticles = articlesData.count || 0;
-      const activeEvents = eventsData.count || 0;
+      const totalChangelogs = changelogsData.count || 0;
 
       setStats([
         { label: "Total Users", value: totalUsers.toLocaleString(), change: "+12%", icon: Users },
         { label: "Forum Posts", value: totalPosts.toLocaleString(), change: "+8%", icon: MessageSquare },
         { label: "Wiki Articles", value: totalArticles.toLocaleString(), change: "+3%", icon: BookOpen },
-        { label: "Active Events", value: activeEvents.toString(), change: "+2", icon: Calendar },
+        { label: "Changelogs", value: totalChangelogs.toString(), change: "+2", icon: Calendar },
       ]);
     } catch (err: any) {
       setError(err?.message || "Failed to load dashboard data");
