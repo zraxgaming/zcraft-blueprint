@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { sendWebhook, WebhookEvent } from '@/services/webhookService';
 
 export type AppRole = 'admin' | 'moderator' | 'user';
 
@@ -106,12 +107,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) throw error;
+
+    // Send webhook for user login
+    if (data.user) {
+      await sendWebhook(WebhookEvent.USER_LOGIN, {
+        userId: data.user.id,
+        email: data.user.email,
+        lastSignInAt: data.user.last_sign_in_at,
+      });
+    }
   };
 
   const register = async (email: string, password: string, username: string) => {
@@ -130,11 +140,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('Failed to create user');
+
+    // Send webhook for user registration
+    await sendWebhook(WebhookEvent.USER_REGISTERED, {
+      userId: authData.user.id,
+      email: authData.user.email,
+      username,
+      createdAt: authData.user.created_at,
+    });
   };
 
   const logout = async () => {
+    const userId = user?.id;
+    const userEmail = user?.email;
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+
+    // Send webhook for user logout
+    if (userId) {
+      await sendWebhook(WebhookEvent.USER_LOGOUT, {
+        userId,
+        email: userEmail,
+      });
+    }
+
     setUser(null);
     setUserProfile(null);
     setSession(null);
@@ -156,6 +186,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
 
     setUserProfile((prev) => prev ? { ...prev, ...updates } : null);
+
+    // Send webhook for profile update
+    await sendWebhook(WebhookEvent.USER_PROFILE_UPDATED, {
+      userId: user.id,
+      email: user.email,
+      updatedFields: Object.keys(updates),
+      updates,
+    });
   };
 
   const signInWithDiscord = async () => {

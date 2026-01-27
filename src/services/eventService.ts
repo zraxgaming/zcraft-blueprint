@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sendWebhook, WebhookEvent } from './webhookService';
 
 export interface Event {
   id: string;
@@ -58,6 +59,16 @@ export async function createEvent(event: Omit<Event, 'id' | 'created_at' | 'regi
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.EVENT_CREATED, {
+    eventId: data.id,
+    title: data.title,
+    date: data.date,
+    location: data.location,
+    description: data.description,
+  });
+
   return data as Event;
 }
 
@@ -70,16 +81,37 @@ export async function updateEvent(id: string, updates: Partial<Event>) {
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.EVENT_UPDATED, {
+    eventId: data.id,
+    title: data.title,
+    date: data.date,
+    location: data.location,
+    updates,
+  });
+
   return data as Event;
 }
 
 export async function deleteEvent(id: string) {
+  // Get event info before deleting for webhook
+  const event = await getEvent(id);
+
   const { error } = await supabase
     .from('events')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.EVENT_DELETED, {
+    eventId: event.id,
+    title: event.title,
+    date: event.date,
+    location: event.location,
+  });
 }
 
 export async function registerForEvent(eventId: string) {
@@ -90,12 +122,33 @@ export async function registerForEvent(eventId: string) {
     throw new Error('Event is full');
   }
 
-  return updateEvent(eventId, { registered_count: newCount });
+  const result = await updateEvent(eventId, { registered_count: newCount });
+
+  // Send webhook for registration
+  await sendWebhook(WebhookEvent.EVENT_REGISTERED, {
+    eventId,
+    title: event.title,
+    registeredCount: newCount,
+    maxPlayers: event.max_players,
+  });
+
+  return result;
 }
 
 export async function unregisterFromEvent(eventId: string) {
   const event = await getEvent(eventId);
-  return updateEvent(eventId, { registered_count: Math.max(0, (event.registered_count || 0) - 1) });
+  const newCount = Math.max(0, (event.registered_count || 0) - 1);
+
+  const result = await updateEvent(eventId, { registered_count: newCount });
+
+  // Send webhook for unregistration
+  await sendWebhook(WebhookEvent.EVENT_UNREGISTERED, {
+    eventId,
+    title: event.title,
+    registeredCount: newCount,
+  });
+
+  return result;
 }
 
 export async function getPastEvents(limit: number = 5) {
