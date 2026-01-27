@@ -22,7 +22,7 @@ const sidebarLinks = [
   { label: "Forums", href: "/admin/forums", icon: MessageSquare },
   { label: "News", href: "/admin/news", icon: Newspaper },
   { label: "Wiki", href: "/admin/wiki", icon: BookOpen },
-  { label: "Events", href: "/admin/events", icon: Calendar },
+  { label: "Changelogs", href: "/admin/changelogs", icon: Calendar },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

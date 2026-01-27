@@ -25,9 +25,14 @@ const steps = [
 export default function PlayPage() {
   const [copiedJava, setCopiedJava] = useState(false);
   const [copiedBedrock, setCopiedBedrock] = useState(false);
+  const JAVA_IP = "play.zcraftmc.xyz";
+  const JAVA_PORT = "11339";
+  const BEDROCK_IP = "bedrock.zcraftmc.xyz";
+  const BEDROCK_PORT = "11339";
 
   const copyAddress = (type: "java" | "bedrock") => {
-    navigator.clipboard.writeText("play.zcraft.net");
+    const address = type === "java" ? `${JAVA_IP}:${JAVA_PORT}` : `${BEDROCK_IP}:${BEDROCK_PORT}`;
+    navigator.clipboard.writeText(address);
     if (type === "java") {
       setCopiedJava(true);
       setTimeout(() => setCopiedJava(false), 2000);
@@ -75,8 +80,8 @@ export default function PlayPage() {
               <CardContent className="space-y-4 relative">
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Server Address</p>
-                  <div className="flex items-center gap-2">
-                    <code className="font-mono text-lg font-semibold flex-1">play.zcraft.net</code>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <code className="font-mono text-lg font-semibold flex-1 break-all">{JAVA_IP}</code>
                     <Button
                       variant="outline"
                       size="sm"
@@ -85,6 +90,10 @@ export default function PlayPage() {
                       {copiedJava ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                     </Button>
                   </div>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/50">
+                  <p className="text-sm text-muted-foreground mb-1">Port</p>
+                  <p className="font-semibold">{JAVA_PORT}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Supported Versions</p>
@@ -110,8 +119,8 @@ export default function PlayPage() {
               <CardContent className="space-y-4 relative">
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Server Address</p>
-                  <div className="flex items-center gap-2">
-                    <code className="font-mono text-lg font-semibold flex-1">play.zcraft.net</code>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                    <code className="font-mono text-lg font-semibold flex-1 break-all">{BEDROCK_IP}</code>
                     <Button
                       variant="outline"
                       size="sm"
@@ -123,7 +132,7 @@ export default function PlayPage() {
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Port</p>
-                  <p className="font-semibold">19132</p>
+                  <p className="font-semibold">{BEDROCK_PORT}</p>
                 </div>
               </CardContent>
             </Card>

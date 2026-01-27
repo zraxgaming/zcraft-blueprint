@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sendWebhook, WebhookEvent } from './webhookService';
 
 export interface Author {
   id: string;
@@ -56,6 +57,15 @@ export async function getWikiArticle(slug: string) {
     .update({ views: (data.views || 0) + 1 })
     .eq('id', data.id);
 
+  // Send webhook for view
+  await sendWebhook(WebhookEvent.WIKI_VIEWED, {
+    articleId: data.id,
+    title: data.title,
+    slug: data.slug,
+    category: data.category,
+    views: (data.views || 0) + 1,
+  });
+
   return data as WikiArticle;
 }
 
@@ -70,6 +80,16 @@ export async function createWikiArticle(article: Omit<WikiArticle, 'id' | 'creat
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.WIKI_CREATED, {
+    articleId: data.id,
+    title: data.title,
+    slug: data.slug,
+    category: data.category,
+    authorId: data.author_id,
+  });
+
   return data as WikiArticle;
 }
 
@@ -87,16 +107,43 @@ export async function updateWikiArticle(id: string, updates: Partial<WikiArticle
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.WIKI_UPDATED, {
+    articleId: data.id,
+    title: data.title,
+    slug: data.slug,
+    category: data.category,
+    updates,
+  });
+
   return data as WikiArticle;
 }
 
 export async function deleteWikiArticle(id: string) {
+  // Get article info before deleting
+  const { data: articleData } = await supabase
+    .from('wiki')
+    .select('*')
+    .eq('id', id)
+    .single();
+
   const { error } = await supabase
     .from('wiki')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  // Send webhook
+  if (articleData) {
+    await sendWebhook(WebhookEvent.WIKI_DELETED, {
+      articleId: articleData.id,
+      title: articleData.title,
+      slug: articleData.slug,
+      category: articleData.category,
+    });
+  }
 }
 
 export async function getCategories() {

@@ -10,7 +10,7 @@ const navLinks = [
   { name: "Play", path: "/play" },
   { name: "Forums", path: "/forums" },
   { name: "News", path: "/news" },
-  { name: "Wiki", path: "/wiki" },
+  { name: "Wiki", path: "https://wiki.z-craft.xyz", external: true },
   { name: "Rules", path: "/rules" },
   {
     name: "Status",
@@ -32,7 +32,7 @@ export function Navbar() {
   };
 
   const copyIP = () => {
-    navigator.clipboard.writeText("play.zcraft.net");
+    navigator.clipboard.writeText("play.zcraftmc.xyz:11339");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -75,10 +75,10 @@ export function Navbar() {
                 className="gap-2 font-mono text-xs h-8"
               >
                 {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                play.zcraft.net
+                play.zcraftmc.xyz:11339
               </Button>
               <a
-                href="https://discord.gg/zcraft"
+                href="https://discord.z-craft.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted transition-colors"

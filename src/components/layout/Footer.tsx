@@ -11,15 +11,20 @@ const footerLinks = {
       external: true,
     },
     { name: "Rules", path: "/rules" },
+    {
+      name: "Bans",
+      path: "https://bans.z-craft.xyz",
+      external: true,
+    },
   ],
   Community: [
     { name: "Forums", path: "/forums" },
     { name: "News", path: "/news" },
-    { name: "Events", path: "/events" },
+    { name: "Changelogs", path: "/events" },
     { name: "Staff", path: "/staff" },
   ],
   Resources: [
-    { name: "Wiki", path: "/wiki" },
+    { name: "Wiki", path: "https://wiki.z-craft.xyz", external: true },
     { name: "Support", path: "/support" },
     { name: "Store", path: "/store", external: true },
   ],
@@ -93,7 +98,7 @@ export function Footer() {
             © 2024 ZCraft. Not affiliated with Mojang AB.
           </p>
           <p className="text-sm text-muted-foreground font-mono">
-            play.zcraft.net
+            play.zcraftmc.xyz:11339 | bedrock.zcraftmc.xyz:11339
           </p>
         </div>
       </div>

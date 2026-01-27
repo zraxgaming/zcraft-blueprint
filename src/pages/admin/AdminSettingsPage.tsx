@@ -25,7 +25,9 @@ export default function AdminSettingsPage() {
 
   // General settings
   const [serverName, setServerName] = useState("ZCraft Network");
-  const [serverIp, setServerIp] = useState("play.zcraft.net");
+  const [javaIp, setJavaIp] = useState("play.zcraftmc.xyz");
+  const [bedrockIp, setBedrockIp] = useState("bedrock.zcraftmc.xyz");
+  const [serverPort, setServerPort] = useState("11339");
   const [serverDescription, setServerDescription] = useState("");
   const [discordUrl, setDiscordUrl] = useState("");
   const [storeUrl, setStoreUrl] = useState("");
@@ -49,7 +51,9 @@ export default function AdminSettingsPage() {
       const settingsMap = new Map(settings.map(s => [s.key, s.value]));
 
       setServerName(settingsMap.get('server_name') || 'ZCraft Network');
-      setServerIp(settingsMap.get('server_ip') || 'play.zcraft.net');
+      setJavaIp(settingsMap.get('java_ip') || 'play.zcraftmc.xyz');
+      setBedrockIp(settingsMap.get('bedrock_ip') || 'bedrock.zcraftmc.xyz');
+      setServerPort(settingsMap.get('server_port') || '11339');
       setServerDescription(settingsMap.get('server_description') || '');
       setDiscordUrl(settingsMap.get('discord_link') || '');
       setStoreUrl(settingsMap.get('store_url') || '');
@@ -71,7 +75,9 @@ export default function AdminSettingsPage() {
       setSaving(true);
       await Promise.all([
         settingsService.setSetting('server_name', serverName),
-        settingsService.setSetting('server_ip', serverIp),
+        settingsService.setSetting('java_ip', javaIp),
+        settingsService.setSetting('bedrock_ip', bedrockIp),
+        settingsService.setSetting('server_port', serverPort),
         settingsService.setSetting('server_description', serverDescription),
         settingsService.setSetting('discord_link', discordUrl),
         settingsService.setSetting('store_url', storeUrl),
@@ -163,8 +169,18 @@ export default function AdminSettingsPage() {
                   <Input value={serverName} onChange={(e) => setServerName(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Server IP</Label>
-                  <Input value={serverIp} onChange={(e) => setServerIp(e.target.value)} />
+                  <Label>Server Port</Label>
+                  <Input value={serverPort} onChange={(e) => setServerPort(e.target.value)} type="number" />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Java Edition IP</Label>
+                  <Input value={javaIp} onChange={(e) => setJavaIp(e.target.value)} placeholder="play.zcraftmc.xyz" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bedrock Edition IP</Label>
+                  <Input value={bedrockIp} onChange={(e) => setBedrockIp(e.target.value)} placeholder="bedrock.zcraftmc.xyz" />
                 </div>
               </div>
               <div className="space-y-2">

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { sendWebhook, WebhookEvent } from './webhookService';
 
 export interface Author {
   id: string;
@@ -87,6 +88,16 @@ export async function createForum(forum: Omit<Forum, 'id' | 'created_at' | 'post
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.FORUM_CREATED, {
+    forumId: data.id,
+    title: data.title,
+    slug: data.slug,
+    category: data.category,
+    description: data.description,
+  });
+
   return data as Forum;
 }
 
@@ -99,16 +110,35 @@ export async function updateForum(id: string, updates: Partial<Forum>) {
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.FORUM_UPDATED, {
+    forumId: data.id,
+    title: data.title,
+    category: data.category,
+    updates,
+  });
+
   return data as Forum;
 }
 
 export async function deleteForum(id: string) {
+  // Get forum info before deleting
+  const forum = await getForumById(id);
+
   const { error } = await supabase
     .from('forums')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.FORUM_DELETED, {
+    forumId: forum.id,
+    title: forum.title,
+    category: forum.category,
+  });
 }
 
 export async function createForumPost(post: Omit<ForumPost, 'id' | 'created_at' | 'updated_at' | 'views' | 'replies' | 'author'>) {
@@ -141,6 +171,15 @@ export async function createForumPost(post: Omit<ForumPost, 'id' | 'created_at' 
       .eq('id', post.forum_id);
   }
 
+  // Send webhook
+  await sendWebhook(WebhookEvent.FORUM_POST_CREATED, {
+    postId: data.id,
+    forumId: data.forum_id,
+    authorId: data.author_id,
+    title: data.title,
+    content: data.content,
+  });
+
   return data as ForumPost;
 }
 
@@ -156,16 +195,41 @@ export async function updateForumPost(id: string, updates: Partial<ForumPost>) {
     .single();
 
   if (error) throw error;
+
+  // Send webhook
+  await sendWebhook(WebhookEvent.FORUM_POST_UPDATED, {
+    postId: data.id,
+    forumId: data.forum_id,
+    title: data.title,
+    updates,
+  });
+
   return data as ForumPost;
 }
 
 export async function deleteForumPost(id: string) {
+  // Get post info before deleting
+  const { data: postData } = await supabase
+    .from('forum_posts')
+    .select('*')
+    .eq('id', id)
+    .single();
+
   const { error } = await supabase
     .from('forum_posts')
     .delete()
     .eq('id', id);
 
   if (error) throw error;
+
+  // Send webhook
+  if (postData) {
+    await sendWebhook(WebhookEvent.FORUM_POST_DELETED, {
+      postId: postData.id,
+      forumId: postData.forum_id,
+      title: postData.title,
+    });
+  }
 }
 
 export async function getCategories() {

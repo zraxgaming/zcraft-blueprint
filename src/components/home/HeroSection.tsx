@@ -37,7 +37,7 @@ export function HeroSection() {
   }, []);
 
   const copyIP = () => {
-    navigator.clipboard.writeText("play.zcraft.net");
+    navigator.clipboard.writeText("play.zcraftmc.xyz:11339");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -163,7 +163,7 @@ export function HeroSection() {
                 className="h-16 px-10 text-lg gap-3 font-mono border-2 hover:bg-primary/10"
               >
                 {copied ? <Check className="h-6 w-6 text-emerald-500" /> : <Copy className="h-6 w-6" />}
-                play.zcraft.net
+                play.zcraftmc.xyz:11339
               </Button>
             </motion.div>
           </motion.div>
