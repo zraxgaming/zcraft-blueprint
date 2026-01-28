@@ -57,7 +57,14 @@ export default function ForumsPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "ZCraft Forums — Community Discussions & Help",
+          description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
+          keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
+          url: "https://z-craft.xyz/forums",
+        }}
+      >
         <div className="flex items-center justify-center py-20">
           <Loader className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -67,14 +74,28 @@ export default function ForumsPage() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "ZCraft Forums — Community Discussions & Help",
+          description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
+          keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
+          url: "https://z-craft.xyz/forums",
+        }}
+      >
         <div className="py-20 text-center text-red-500">{error}</div>
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "ZCraft Forums — Community Discussions & Help",
+        description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
+        keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
+        url: "https://z-craft.xyz/forums",
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

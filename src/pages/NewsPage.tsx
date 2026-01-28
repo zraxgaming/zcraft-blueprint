@@ -45,7 +45,14 @@ export default function NewsPage() {
   const otherPosts = posts.slice(1);
   
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "ZCraft News — Announcements, Updates & Events",
+        description: "Official ZCraft Network announcements, event news, and update notes. Stay informed about server changes and upcoming events.",
+        keywords: "zcraft news, minecraft server news, lifesteal events, zcraft updates",
+        url: "https://z-craft.xyz/news",
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

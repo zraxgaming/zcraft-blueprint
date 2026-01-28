@@ -48,7 +48,14 @@ export default function ProfilePage() {
 
   if (authLoading || loading) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "Profile — ZCraft Network",
+          description: "View and manage your ZCraft profile, posts, and settings.",
+          keywords: "zcraft profile, player profile, minecraft account",
+          url: "https://z-craft.xyz/profile",
+        }}
+      >
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loader className="h-8 w-8 animate-spin" />
         </div>
@@ -58,7 +65,14 @@ export default function ProfilePage() {
 
   if (!user || !userProfile) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "Profile — ZCraft Network",
+          description: "View and manage your ZCraft profile, posts, and settings.",
+          keywords: "zcraft profile, player profile, minecraft account",
+          url: "https://z-craft.xyz/profile",
+        }}
+      >
         <div className="container mx-auto px-4 py-12 text-center">
           <p className="text-muted-foreground">Please log in to view your profile.</p>
           <Button className="mt-4" onClick={() => navigate("/login")}>Go to Login</Button>
@@ -72,7 +86,14 @@ export default function ProfilePage() {
     month: 'long',
   });
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: `Profile — ${userProfile.username} | ZCraft Network`,
+        description: `${userProfile.username}'s profile on ZCraft Network. View posts, threads, and account settings.`,
+        keywords: `zcraft profile, ${userProfile.username}, player profile`,
+        url: `https://z-craft.xyz/profile`,
+      }}
+    >
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">

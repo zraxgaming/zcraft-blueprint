@@ -2,8 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import PlayPage from "./pages/PlayPage";
 import ForumsPage from "./pages/ForumsPage";
@@ -18,6 +20,7 @@ import StaffPage from "./pages/StaffPage";
 import EventsPage from "./pages/ChangelogsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
+import ServerListings from "./pages/ServerListings";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -37,16 +40,37 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function MaintenanceGate({ children }: { children: React.ReactNode }) {
+  const { settings, loading } = useSettings();
+  const { loading: authLoading, isAdmin } = useAuth();
+  const location = useLocation();
+  // while loading settings, show children (or we could show spinner)
+  if (loading || !settings) return <>{children}</>;
+
+  // If maintenance mode is enabled, redirect non-admins to /maintenance
+  // Auth is available via useAuth inside pages; here we simply redirect all users
+  if (settings.maintenanceMode && location.pathname !== '/maintenance') {
+    // allow admins to bypass maintenance
+    if (authLoading) return <>{children}</>;
+    if (!isAdmin) return <Navigate to="/maintenance" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/play" element={<PlayPage />} />
+      <SettingsProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <MaintenanceGate>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/play" element={<PlayPage />} />
+                <Route path="/server-listings" element={<ServerListings />} />
             <Route path="/forums" element={<ForumsPage />} />
             <Route path="/forums/:slug" element={<ForumThreadPage />} />
             <Route path="/news" element={<NewsPage />} />
@@ -74,10 +98,12 @@ const App = () => (
             <Route path="/admin/settings" element={<AdminSettingsPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </MaintenanceGate>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SettingsProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

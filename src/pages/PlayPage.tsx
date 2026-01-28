@@ -43,7 +43,15 @@ export default function PlayPage() {
   };
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "Play ZCraft — Join the Lifesteal Minecraft Servers",
+        description:
+          "Connect to ZCraft Network (Java & Bedrock) — lifesteal gameplay, custom plugins, active events, and friendly community.",
+        keywords: "play zcraft, zcraft play, lifesteal server, minecraft lifesteal, java bedrock",
+        url: "https://z-craft.xyz/play",
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

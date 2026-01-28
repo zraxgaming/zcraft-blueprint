@@ -21,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { supabase } from "@/lib/supabase";
+import { settingsService } from "@/services/settingsService";
+import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "@/components/ui/use-toast";
 
 interface Stat {
@@ -41,6 +43,7 @@ interface ActivityItem {
 export default function AdminPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [announcementEnabled, setAnnouncementEnabled] = useState(true);
+  const { refresh } = useSettings();
   const [stats, setStats] = useState<Stat[]>([
     { label: "Total Users", value: "0", change: "+0%", icon: Users },
     { label: "Forum Posts", value: "0", change: "+0%", icon: MessageSquare },
@@ -53,6 +56,21 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    // load quick site flags
+    (async () => {
+      try {
+        const rows = await settingsService.getSettings();
+        const m = rows.find((r: any) => r.key === 'maintenance_mode')?.value === 'true';
+        const a = rows.find((r: any) => r.key === 'announcement_enabled')?.value === 'true';
+        setMaintenanceMode(!!m);
+        setAnnouncementEnabled(!!a);
+      } catch (e) {
+        // ignore
+      }
+    })();
   }, []);
 
   const loadDashboardData = async () => {
@@ -217,7 +235,19 @@ export default function AdminPage() {
                       Enable to show maintenance page to all visitors
                     </p>
                   </div>
-                  <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
+                  <Switch
+                    checked={maintenanceMode}
+                    onCheckedChange={async (v) => {
+                      setMaintenanceMode(v);
+                      try {
+                        await settingsService.setSetting('maintenance_mode', v.toString());
+                        await refresh();
+                        toast({ title: 'Success', description: 'Maintenance mode updated' });
+                      } catch (err: any) {
+                        toast({ title: 'Error', description: err?.message || 'Failed to update', variant: 'destructive' });
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border">
@@ -227,7 +257,19 @@ export default function AdminPage() {
                       Show announcement banner on all pages
                     </p>
                   </div>
-                  <Switch checked={announcementEnabled} onCheckedChange={setAnnouncementEnabled} />
+                  <Switch
+                    checked={announcementEnabled}
+                    onCheckedChange={async (v) => {
+                      setAnnouncementEnabled(v);
+                      try {
+                        await settingsService.setSetting('announcement_enabled', v.toString());
+                        await refresh();
+                        toast({ title: 'Success', description: 'Announcement flag updated' });
+                      } catch (err: any) {
+                        toast({ title: 'Error', description: err?.message || 'Failed to update', variant: 'destructive' });
+                      }
+                    }}
+                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-lg border border-border">
