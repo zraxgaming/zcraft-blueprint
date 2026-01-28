@@ -27,7 +27,7 @@ const footerLinks = {
     { name: "Wiki", path: "https://wiki.z-craft.xyz", external: true },
     { name: "Support", path: "/support" },
     { name: "Appeal", path: "https://appeal.z-craft.xyz", external: true },
-    { name: "Store", path: "/store", external: true },
+    { name: "Store", path: "https://store.z-craft.xyz", external: true },
   ],
   Legal: [
     { name: "Privacy Policy", path: "/privacy" },
