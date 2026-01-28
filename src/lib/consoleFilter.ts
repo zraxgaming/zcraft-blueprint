@@ -17,9 +17,9 @@ if (typeof window !== "undefined") {
 
   // In production, silence verbose methods
   if (isProd) {
-    console.log = () => {} as any;
-    console.info = () => {} as any;
-    console.debug = () => {} as any;
+    (console.log as any) = () => {};
+    (console.info as any) = () => {};
+    (console.debug as any) = () => {};
   }
 
   // Rate-limit repeated error messages to avoid flooding

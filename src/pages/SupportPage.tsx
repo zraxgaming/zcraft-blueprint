@@ -11,7 +11,7 @@ const supportOptions = [
     description: "Submit a support ticket for personalized help from our team.",
     action: "Open Ticket",
     color: "bg-primary/10 text-primary",
-    href: "https://discord.z-craft.xyz",
+    href: "https://discord.gg/zcraft",
   },
   {
     icon: Shield,
@@ -19,7 +19,7 @@ const supportOptions = [
     description: "Think you were unfairly punished? Submit an appeal here.",
     action: "Start Appeal",
     color: "bg-amber-500/10 text-amber-600",
-    href: "https://discord.z-craft.xyz",
+    href: "https://appeal.z-craft.xyz",
   },
   {
     icon: MessageSquare,
@@ -27,7 +27,7 @@ const supportOptions = [
     description: "Get real-time support from staff and community members.",
     action: "Join Server",
     color: "bg-indigo-500/10 text-indigo-600",
-    href: "https://discord.z-craft.xyz",
+    href: "https://discord.gg/zcraft",
   },
 ];
 
