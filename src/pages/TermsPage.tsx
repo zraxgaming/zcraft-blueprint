@@ -4,7 +4,13 @@ import { Separator } from "@/components/ui/separator";
 
 export default function TermsPage() {
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "Terms of Service — ZCraft Network",
+        description: "Terms of Service for ZCraft Network. Rules for using our Minecraft servers, forums, and services.",
+        url: "https://z-craft.xyz/terms",
+      }}
+    >
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">

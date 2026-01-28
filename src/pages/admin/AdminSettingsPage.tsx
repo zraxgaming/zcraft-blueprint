@@ -17,11 +17,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { settingsService } from "@/services/settingsService";
+import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "@/components/ui/use-toast";
 
 export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { refresh } = useSettings();
 
   // General settings
   const [serverName, setServerName] = useState("ZCraft Network");
@@ -83,6 +85,8 @@ export default function AdminSettingsPage() {
         settingsService.setSetting('store_url', storeUrl),
       ]);
       toast({ title: "Success", description: "General settings saved" });
+      // refresh global settings
+      try { await refresh(); } catch (e) { /* ignore */ }
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
     } finally {
@@ -99,6 +103,7 @@ export default function AdminSettingsPage() {
         settingsService.setSetting('announcement_message', announcementMessage),
       ]);
       toast({ title: "Success", description: "Site status saved" });
+      try { await refresh(); } catch (e) { /* ignore */ }
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
     } finally {
@@ -114,6 +119,7 @@ export default function AdminSettingsPage() {
         settingsService.setSetting('email_verification', emailVerification.toString()),
       ]);
       toast({ title: "Success", description: "Security settings saved" });
+      try { await refresh(); } catch (e) { /* ignore */ }
     } catch (err: any) {
       toast({ title: "Error", description: err?.message || "Failed to save settings", variant: "destructive" });
     } finally {
@@ -133,6 +139,8 @@ export default function AdminSettingsPage() {
 
   return (
     <AdminLayout title="Settings">
+      {/* Ensure global settings are refreshed from admin actions */}
+      {/* refresh is provided by SettingsContext */}
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="bg-muted">
           <TabsTrigger value="general" className="gap-2">

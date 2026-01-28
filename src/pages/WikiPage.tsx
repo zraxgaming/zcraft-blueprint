@@ -23,6 +23,11 @@ interface WikiArticlePreview {
 }
 
 export default function WikiPage() {
+  // Redirect wiki to canonical domain immediately
+  useEffect(() => {
+    window.location.replace("https://z-craft.xyz/wiki");
+  }, []);
+
   const [categories, setCategories] = useState<WikiCategory[]>([]);
   const [popularArticles, setPopularArticles] = useState<WikiArticlePreview[]>([]);
   const [recentArticles, setRecentArticles] = useState<WikiArticlePreview[]>([]);
@@ -53,7 +58,15 @@ export default function WikiPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "ZCraft Wiki — Server Guides & How-Tos",
+          description:
+            "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
+          keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",
+          url: "https://z-craft.xyz/wiki",
+        }}
+      >
         <div className="flex items-center justify-center py-20">
           <Loader className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -63,14 +76,30 @@ export default function WikiPage() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout
+        seo={{
+          title: "ZCraft Wiki — Server Guides & How-Tos",
+          description:
+            "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
+          keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",
+          url: "https://z-craft.xyz/wiki",
+        }}
+      >
         <div className="py-20 text-center text-red-500">{error}</div>
       </Layout>
     );
   }
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "ZCraft Wiki — Server Guides & How-Tos",
+        description:
+          "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
+        keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",
+        url: "https://z-craft.xyz/wiki",
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#7C3AED" />
+      <stop offset="1" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0f172a" />
+  <rect x="60" y="60" width="1080" height="510" rx="24" fill="url(#g)" opacity="0.12" />
+  <g transform="translate(80,120)">
+    <text x="0" y="60" font-family="Inter, Roboto, Arial" font-size="56" font-weight="700" fill="#ffffff">ZCraft Network</text>
+    <text x="0" y="120" font-family="Inter, Roboto, Arial" font-size="28" fill="#cbd5e1">Lifesteal • Survival • Events • Economy</text>
+  </g>
+</svg>

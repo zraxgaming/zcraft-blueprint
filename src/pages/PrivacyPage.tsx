@@ -4,7 +4,13 @@ import { Separator } from "@/components/ui/separator";
 
 export default function PrivacyPage() {
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "Privacy Policy — ZCraft Network",
+        description: "ZCraft Network privacy policy: how we collect and use data for our Minecraft servers and community services.",
+        url: "https://z-craft.xyz/privacy",
+      }}
+    >
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
