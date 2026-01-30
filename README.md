@@ -71,3 +71,22 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+---
+
+## Sitemap generation (automatic)
+
+This project includes a build-time sitemap generator that collects static pages and dynamic slugs from Supabase (news, wiki, changelogs, events, recent forum threads) and writes `public/sitemap.xml` before builds.
+
+- Run locally: `npm run generate:sitemap` (reads `.env` or process env for `SITE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`).
+- Build step: `npm run build` runs the sitemap generator automatically via `prebuild`.
+- GitHub Actions: There's a workflow `.github/workflows/generate-sitemap.yml` that runs on push to `main` and commits updated `public/sitemap.xml` back to the repo when it changes.
+
+Add the following env vars in your deployment platform for accurate dynamic sitemaps:
+
+- `SITE_URL` — e.g., `https://z-craft.xyz`
+- `SUPABASE_URL` — your Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — **optional but recommended** for reading protected tables
+- `SITEMAP_FORUM_LIMIT` — optional limit for number of forum threads (default 500)
+
+A `.env.example` file is included at the repo root to help set these values.

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, Monitor, Smartphone, ChevronRight } from "lucide-react";
 import { useState } from "react";
-
+import ServerLiveCard from "@/components/server/ServerLiveCard";
 const steps = [
   {
     number: 1,
@@ -63,6 +63,15 @@ export default function PlayPage() {
             <p className="text-xl text-muted-foreground">
               Connect to ZCraft in seconds. We support both Java and Bedrock editions!
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live server card */}
+      <section className="py-6">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto mb-6">
+            <ServerLiveCard host="play.zcraftmc.xyz:11339" />
           </div>
         </div>
       </section>

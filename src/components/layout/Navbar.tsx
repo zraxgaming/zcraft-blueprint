@@ -9,6 +9,7 @@ const navLinks = [
   { name: "Home", path: "/" },
   { name: "Play", path: "/play" },
   { name: "Forums", path: "/forums" },
+  { name: "Server Listings", path: "/server-listings" },
   { name: "Appeal", path: "https://appeal.z-craft.xyz", external: true },
   { name: "Wiki", path: "https://wiki.z-craft.xyz", external: true },
   { name: "Rules", path: "/rules" },

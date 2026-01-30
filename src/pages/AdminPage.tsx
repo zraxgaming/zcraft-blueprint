@@ -24,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import { settingsService } from "@/services/settingsService";
 import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "@/components/ui/use-toast";
+import { fetchMinecraftServerStatus } from "@/services/serverService";
 
 interface Stat {
   label: string;
@@ -50,12 +51,15 @@ export default function AdminPage() {
     { label: "Wiki Articles", value: "0", change: "+0%", icon: BookOpen },
     { label: "Changelogs", value: "0", change: "+0", icon: Calendar },
   ]);
+  const [serviceStatus, setServiceStatus] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusLoading, setStatusLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
+    loadServiceStatus();
   }, []);
 
   useEffect(() => {
@@ -72,6 +76,45 @@ export default function AdminPage() {
       }
     })();
   }, []);
+
+  // fetch live status for services
+  async function pingUrl(url: string) {
+    const controller = new AbortController();
+    const start = performance.now();
+    const id = setTimeout(() => controller.abort(), 5000);
+    try {
+      const res = await fetch(url, { signal: controller.signal, method: 'HEAD' });
+      const ms = Math.max(0, Math.round(performance.now() - start));
+      return { ok: res.ok, latency: ms };
+    } catch (e) {
+      return { ok: false, latency: null };
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
+  async function loadServiceStatus() {
+    setStatusLoading(true);
+    try {
+      const server = await fetchMinecraftServerStatus('play.zcraftmc.xyz:11339');
+      const website = await pingUrl('https://z-craft.xyz');
+      const forums = await pingUrl('https://z-craft.xyz/forums');
+
+      setServiceStatus([
+        { name: 'Minecraft Server', status: server.online ? 'online' : 'offline', players: server.players ? `${server.players.online}/${server.players.max}` : '—' },
+        { name: 'Website', status: website.ok ? 'online' : 'offline', uptime: website.ok ? 'Available' : 'Unavailable', latency: website.latency },
+        { name: 'Forums', status: forums.ok ? 'online' : 'offline', uptime: forums.ok ? 'Available' : 'Unavailable', latency: forums.latency },
+      ]);
+    } catch (err) {
+      setServiceStatus([
+        { name: 'Minecraft Server', status: 'unknown', players: '—' },
+        { name: 'Website', status: 'unknown', uptime: '—' },
+        { name: 'Forums', status: 'unknown', uptime: '—' },
+      ]);
+    } finally {
+      setStatusLoading(false);
+    }
+  }
 
   const loadDashboardData = async () => {
     try {
@@ -194,25 +237,29 @@ export default function AdminPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[
-                    { name: "Minecraft Server", status: "online", players: "1,234/5,000" },
-                    { name: "Website", status: "online", uptime: "99.9%" },
-                    { name: "Forums", status: "online", uptime: "99.8%" },
-                    { name: "Discord Bot", status: "degraded", note: "High latency" },
-                  ].map((service, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className={`h-3 w-3 rounded-full ${
-                          service.status === 'online' ? 'bg-emerald-500' :
-                          service.status === 'degraded' ? 'bg-amber-500' : 'bg-red-500'
-                        }`} />
-                        <span className="font-medium">{service.name}</span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {service.players || service.uptime || service.note}
-                      </span>
+                  {statusLoading ? (
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-lg bg-muted/50 animate-pulse h-12" />
+                      <div className="p-3 rounded-lg bg-muted/50 animate-pulse h-12" />
+                      <div className="p-3 rounded-lg bg-muted/50 animate-pulse h-12" />
+                      <div className="p-3 rounded-lg bg-muted/50 animate-pulse h-12" />
                     </div>
-                  ))}
+                  ) : (
+                    serviceStatus.map((service, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          <div className={`h-3 w-3 rounded-full ${
+                            service.status === 'online' ? 'bg-emerald-500' :
+                            service.status === 'degraded' ? 'bg-amber-500' : service.status === 'offline' ? 'bg-red-500' : 'bg-muted'
+                          }`} />
+                          <span className="font-medium">{service.name}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {service.players ?? service.uptime ?? service.note ?? '—'} {service.latency ? `• ${service.latency}ms` : ''}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>
