@@ -6,6 +6,8 @@ export interface SeoProps {
   keywords?: string;
   image?: string;
   url?: string;
+  type?: 'website' | 'article' | string;
+  publishedTime?: string; // ISO date when the article was published
 }
 
 export function Seo({
@@ -14,6 +16,8 @@ export function Seo({
   keywords = "Minecraft server, lifesteal, minecraft lifesteal, zcraft, zcraft network, minecraft survival",
   image = "/assets/og-image.svg",
   url = "https://z-craft.xyz/",
+  type = 'website',
+  publishedTime,
 }: SeoProps) {
   useEffect(() => {
     if (title) document.title = title;
@@ -40,30 +44,66 @@ export function Seo({
       el.setAttribute("content", content);
     };
 
+    // Ensure absolute URLs for image and url
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const absoluteUrl = url?.startsWith('http') ? url : `${origin}${url}`;
+    const absoluteImage = image?.startsWith('http') ? image : `${origin}${image}`;
+
     setMeta("description", description);
     setMeta("keywords", keywords);
     setProperty("og:title", title);
     setProperty("og:description", description);
-    setProperty("og:image", image);
-    setProperty("og:url", url);
+    setProperty("og:image", absoluteImage);
+    setProperty("og:url", absoluteUrl);
+    setProperty("og:type", type || 'website');
+    setProperty("og:site_name", "ZCraft Network");
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", title);
     setMeta("twitter:description", description);
-    setMeta("twitter:image", image);
+    setMeta("twitter:image", absoluteImage);
+    setMeta("twitter:site", "@ZCraftNetwork");
+    setMeta("robots", "index, follow");
 
-    // JSON-LD structured data (Organization + WebSite)
-    const ld = {
+    // Canonical link
+    if (absoluteUrl) {
+      let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', 'canonical');
+        document.head.appendChild(link);
+      }
+      link.setAttribute('href', absoluteUrl);
+    }
+
+    // JSON-LD structured data (Organization + WebSite + optional SearchAction)
+    const ld: any = {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "ZCraft Network",
-      url,
-      logo: image,
+      url: absoluteUrl,
+      logo: absoluteImage,
       sameAs: [
         "https://discord.gg/zcraft",
         "https://twitter.com/ZCraftNetwork",
         "https://www.facebook.com/ZCraftNetwork",
       ],
     };
+
+    // Add WebSite SearchAction for better search results
+    ld.website = {
+      "@type": "WebSite",
+      url: origin || absoluteUrl,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${origin}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string"
+      }
+    };
+
+    if (type === 'article' && publishedTime) {
+      ld['@type'] = 'Article';
+      ld.datePublished = publishedTime;
+    }
 
     const scriptId = "zcraft-jsonld";
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
@@ -74,7 +114,7 @@ export function Seo({
       document.head.appendChild(script);
     }
     script.text = JSON.stringify(ld);
-  }, [title, description, keywords, image, url]);
+  }, [title, description, keywords, image, url, type, publishedTime]);
 
   return null;
 }

@@ -44,6 +44,8 @@ export default function NewsArticlePage() {
   const { slug } = useParams();
   const article = articles[slug as keyof typeof articles] || articles["summer-event-2024"];
 
+  const publishedTime = new Date(article.date).toISOString();
+
   return (
     <Layout
       seo={{
@@ -51,6 +53,8 @@ export default function NewsArticlePage() {
         description: `${article.title} — ${article.tag} on ZCraft Network. Read details and event information.`,
         keywords: `zcraft news, ${article.tag?.toLowerCase() || 'news'}, zcraft event`,
         url: `https://z-craft.xyz/news/${slug || 'summer-event-2024'}`,
+        type: 'article',
+        publishedTime,
       }}
     >
       <section className="py-12 lg:py-16">

@@ -36,13 +36,13 @@ export default function ChangelogsPage() {
 
   const loadChangelogs = async () => {
     try {
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await (supabase as any)
         .from("changelogs")
         .select("*")
         .order("released_at", { ascending: false });
 
       if (queryError) throw queryError;
-      setChangelogs((data || []) as Changelog[]);
+      setChangelogs((data || []) as unknown as Changelog[]);
     } catch (err: any) {
       setError(err?.message || "Failed to load changelogs");
       toast({ title: "Error", description: "Failed to load changelogs" });
@@ -70,7 +70,15 @@ export default function ChangelogsPage() {
   }
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: 'Changelogs — ZCraft',
+        description: 'Read the latest release notes and changelogs for ZCraft server updates, features, and fixes.',
+        keywords: 'zcraft changelogs, release notes, zcraft updates',
+        url: 'https://z-craft.xyz/changelogs',
+        type: 'website',
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

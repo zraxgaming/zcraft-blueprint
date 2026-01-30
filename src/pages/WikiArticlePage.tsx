@@ -55,8 +55,22 @@ export default function WikiArticlePage() {
   const { slug } = useParams();
   const article = wikiArticles[slug as keyof typeof wikiArticles] || wikiArticles["getting-started"];
 
+  // Derive a short description from the content (first paragraph) for SEO
+  const descriptionMatch = article.content.match(/<p>(.*?)<\//i);
+  const shortDescription = descriptionMatch ? descriptionMatch[1].replace(/<[^>]*>/g, '').slice(0, 160) : `${article.title} — ${article.category}`;
+  const publishedTime = new Date(article.updated).toISOString();
+
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: `${article.title} — ZCraft Wiki`,
+        description: shortDescription,
+        keywords: `zcraft wiki, ${article.category?.toLowerCase() || 'wiki'}, ${article.title.split(' ')[0]}`,
+        url: `https://z-craft.xyz/wiki/${slug || 'getting-started'}`,
+        type: 'article',
+        publishedTime,
+      }}
+    >
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">

@@ -1,0 +1,43 @@
+name: Generate sitemap
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Generate sitemap
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+          SITEMAP_FORUM_LIMIT: ${{ secrets.SITEMAP_FORUM_LIMIT || '500' }}
+        run: node scripts/generate-sitemap.js
+
+      - name: Commit sitemap if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/sitemap.xml || true
+          git diff --staged --quiet || (
+            git commit -m "chore: update sitemap.xml [skip ci]" && git push origin HEAD:main
+          )
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,30 +7,36 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function HeroSection() {
   const [copied, setCopied] = useState(false);
-  const [stats, setStats] = useState({
-    players: "...",
-    blocks: "...",
-    uptime: "99.9%"
-  });
+  const [stats, setStats] = useState<{ players?: string; blocks?: string; uptime?: string } | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     // Fetch real stats from admin_settings
     const fetchStats = async () => {
-      const { data } = await supabase
-        .from('admin_settings')
-        .select('key, value')
-        .in('key', ['total_players', 'total_blocks', 'server_uptime']);
-      
-      if (data) {
-        const statsMap: Record<string, string> = {};
-        data.forEach(item => {
-          statsMap[item.key] = item.value;
-        });
-        setStats({
-          players: statsMap['total_players'] || '12,458',
-          blocks: statsMap['total_blocks'] || '1M+',
-          uptime: statsMap['server_uptime'] || '99.9%'
-        });
+      setLoadingStats(true);
+      try {
+        const { data } = await supabase
+          .from('admin_settings')
+          .select('key, value')
+          .in('key', ['total_players', 'total_blocks', 'server_uptime']);
+        
+        if (data) {
+          const statsMap: Record<string, string> = {};
+          data.forEach(item => {
+            statsMap[item.key] = item.value;
+          });
+          setStats({
+            players: statsMap['total_players'] || undefined,
+            blocks: statsMap['total_blocks'] || undefined,
+            uptime: statsMap['server_uptime'] || undefined
+          });
+        } else {
+          setStats(null);
+        }
+      } catch (e) {
+        setStats(null);
+      } finally {
+        setLoadingStats(false);
       }
     };
     fetchStats();
@@ -40,6 +46,13 @@ export function HeroSection() {
     navigator.clipboard.writeText("play.zcraftmc.xyz:11339");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Friendly fallbacks shown when real admin stats are not available (hard-coded)
+  const FALLBACK_STATS = {
+    players: "256+",
+    blocks: "873k",
+    uptime: "87.9%",
   };
 
   return (
@@ -175,23 +188,40 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            {[
-              { value: stats.players, label: "Players" },
-              { value: stats.blocks, label: "Blocks Placed" },
-              { value: stats.uptime, label: "Uptime" },
-            ].map((stat, index) => (
-              <motion.div 
-                key={stat.label} 
-                className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50"
-                whileHover={{ scale: 1.05, backgroundColor: "hsl(var(--card))" }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.9 + index * 0.1 }}
-              >
-                <p className="font-display text-2xl md:text-4xl font-bold text-primary">{stat.value}</p>
-                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-              </motion.div>
-            ))}
+              {loadingStats ? (
+              <>
+                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
+                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
+                </div>
+                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
+                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
+                </div>
+                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
+                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
+                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
+                </div>
+              </>
+            ) : (
+              [
+                { value: stats?.players ?? FALLBACK_STATS.players, label: "Players" },
+                { value: stats?.blocks ?? FALLBACK_STATS.blocks, label: "Blocks Placed" },
+                { value: stats?.uptime ?? FALLBACK_STATS.uptime, label: "Uptime" },
+              ].map((stat, index) => (
+                <motion.div 
+                  key={stat.label} 
+                  className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50"
+                  whileHover={{ scale: 1.05, backgroundColor: "hsl(var(--card))" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.9 + index * 0.1 }}
+                >
+                  <p className="font-display text-2xl md:text-4xl font-bold text-primary">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                </motion.div>
+              ))
+            )}
           </motion.div>
         </motion.div>
       </div>

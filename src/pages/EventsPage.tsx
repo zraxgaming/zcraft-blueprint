@@ -50,7 +50,15 @@ export default function EventsPage() {
   }
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: 'Server Events — ZCraft',
+        description: 'Join exciting events on ZCraft — tournaments, building contests, seasonal events, and more.',
+        keywords: 'zcraft events, server events, minecraft events',
+        url: 'https://z-craft.xyz/events',
+        type: 'website',
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
