@@ -1,8 +1,10 @@
+import logo from "@/assets/ZCraft-logo.png"; // ✅ ADD THIS
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,18 +46,33 @@ function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const { settings, loading } = useSettings();
   const { loading: authLoading, isAdmin } = useAuth();
   const location = useLocation();
-  // while loading settings, show children (or we could show spinner)
+
   if (loading || !settings) return <>{children}</>;
 
-  // If maintenance mode is enabled, redirect non-admins to /maintenance
-  // Auth is available via useAuth inside pages; here we simply redirect all users
-  if (settings.maintenanceMode && location.pathname !== '/maintenance') {
-    // allow admins to bypass maintenance
+  if (settings.maintenanceMode && location.pathname !== "/maintenance") {
     if (authLoading) return <>{children}</>;
     if (!isAdmin) return <Navigate to="/maintenance" replace />;
   }
 
   return <>{children}</>;
+}
+
+// ✅ SIMPLE GLOBAL HEADER WITH LOGO
+function Header() {
+  return (
+    <div className="w-full border-b border-border bg-background">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
+        <Link to="/" className="flex items-center gap-3">
+          <img
+            src={logo}
+            alt="ZCraft Logo"
+            className="h-12 w-auto object-contain"
+          />
+          <span className="text-xl font-bold">ZCraft</span>
+        </Link>
+      </div>
+    </div>
+  );
 }
 
 const App = () => (
@@ -67,37 +84,41 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <MaintenanceGate>
+              
+              {/* ✅ HEADER ADDED HERE */}
+              <Header />
+
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/play" element={<PlayPage />} />
                 <Route path="/server-listings" element={<ServerListings />} />
-            <Route path="/forums" element={<ForumsPage />} />
-            <Route path="/forums/:slug" element={<ForumThreadPage />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="/news/:slug" element={<NewsArticlePage />} />
-            <Route path="/rules" element={<RulesPage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/status" element={<StatusPage />} />
-            <Route path="/store" element={<StorePage />} />
-            <Route path="/staff" element={<StaffPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/discord" element={<DiscordRedirectPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/news" element={<AdminNewsPage />} />
-            <Route path="/admin/forums" element={<AdminForumsPage />} />
-            <Route path="/admin/wiki" element={<AdminWikiPage />} />
-            <Route path="/admin/changelogs" element={<AdminChangelogsPage />} />
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
-            <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/forums" element={<ForumsPage />} />
+                <Route path="/forums/:slug" element={<ForumThreadPage />} />
+                <Route path="/news" element={<NewsPage />} />
+                <Route path="/news/:slug" element={<NewsArticlePage />} />
+                <Route path="/rules" element={<RulesPage />} />
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/status" element={<StatusPage />} />
+                <Route path="/store" element={<StorePage />} />
+                <Route path="/staff" element={<StaffPage />} />
+                <Route path="/events" element={<EventsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/discord" element={<DiscordRedirectPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/news" element={<AdminNewsPage />} />
+                <Route path="/admin/forums" element={<AdminForumsPage />} />
+                <Route path="/admin/wiki" element={<AdminWikiPage />} />
+                <Route path="/admin/changelogs" element={<AdminChangelogsPage />} />
+                <Route path="/admin/settings" element={<AdminSettingsPage />} />
+                <Route path="/maintenance" element={<MaintenancePage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MaintenanceGate>
