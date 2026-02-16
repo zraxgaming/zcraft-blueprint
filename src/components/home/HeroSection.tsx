@@ -1,44 +1,53 @@
 import { Copy, Check, Play, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import zcraftLogo from "@/assets/zcraft-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
 export function HeroSection() {
+  const navigate = useNavigate();
+
   const [copied, setCopied] = useState(false);
-  const [stats, setStats] = useState<{ players?: string; blocks?: string; uptime?: string } | null>(null);
+  const [stats, setStats] = useState<{
+    players?: string;
+    blocks?: string;
+    uptime?: string;
+  } | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
-    // Fetch real stats from admin_settings
     const fetchStats = async () => {
       setLoadingStats(true);
       try {
         const { data } = await supabase
-          .from('admin_settings')
-          .select('key, value')
-          .in('key', ['total_players', 'total_blocks', 'server_uptime']);
-        
+          .from("admin_settings")
+          .select("key, value")
+          .in("key", ["total_players", "total_blocks", "server_uptime"]);
+
         if (data) {
           const statsMap: Record<string, string> = {};
-          data.forEach(item => {
+          data.forEach((item) => {
             statsMap[item.key] = item.value;
           });
+
           setStats({
-            players: statsMap['total_players'] || undefined,
-            blocks: statsMap['total_blocks'] || undefined,
-            uptime: statsMap['server_uptime'] || undefined
+            players: statsMap["total_players"],
+            blocks: statsMap["total_blocks"],
+            uptime: statsMap["server_uptime"],
           });
         } else {
           setStats(null);
         }
-      } catch (e) {
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
         setStats(null);
       } finally {
         setLoadingStats(false);
       }
     };
+
     fetchStats();
   }, []);
 
@@ -48,7 +57,6 @@ export function HeroSection() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Friendly fallbacks shown when real admin stats are not available (hard-coded)
   const FALLBACK_STATS = {
     players: "256+",
     blocks: "873k",
@@ -57,10 +65,9 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden py-28 lg:py-40">
-      {/* Animated background gradient */}
       <div className="absolute inset-0 hero-gradient" />
-      
-      {/* Floating particles */}
+
+      {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -83,58 +90,28 @@ export function HeroSection() {
           />
         ))}
       </div>
-      
-      {/* Decorative blobs */}
-      <motion.div 
-        className="absolute top-10 left-5 w-80 h-80 bg-primary/15 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{ duration: 6, repeat: Infinity }}
-      />
-      <motion.div 
-        className="absolute bottom-10 right-5 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1.2, 1, 1.2],
-          opacity: [0.2, 0.4, 0.2],
-        }}
-        transition={{ duration: 8, repeat: Infinity }}
-      />
 
       <div className="container mx-auto px-4 relative">
-        <motion.div 
+        <motion.div
           className="max-w-4xl mx-auto text-center"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8 }}
         >
-          {/* Server Logo - BIGGER */}
-          <motion.div 
+          {/* Logo */}
+          <motion.div
             className="mb-10 flex justify-center"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6 }}
           >
-            <div className="relative group">
-              <motion.img 
-                src={zcraftLogo} 
-                alt="ZCraft Network" 
+            <div className="relative">
+              <motion.img
+                src={zcraftLogo}
+                alt="ZCraft Network"
                 className="h-32 md:h-40 lg:h-48 w-auto object-contain"
-                style={{ filter: 'drop-shadow(0 12px 40px hsl(var(--primary) / 0.4))' }}
                 whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
               />
-              {/* Glow effect */}
-              <motion.div 
-                className="absolute -inset-12 bg-primary/20 rounded-full blur-3xl -z-10"
-                animate={{ 
-                  opacity: [0.4, 0.7, 0.4],
-                  scale: [0.9, 1.1, 0.9],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              {/* Sparkle accents */}
               <motion.div
                 className="absolute -top-4 -right-4"
                 animate={{ rotate: 360 }}
@@ -146,28 +123,33 @@ export function HeroSection() {
           </motion.div>
 
           {/* Tagline */}
-          <motion.p 
-            className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
+          <motion.p
+            className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-12 max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ delay: 0.3 }}
           >
             The ultimate Minecraft survival experience. Build, explore, and conquer with thousands of players.
           </motion.p>
 
-          {/* CTA Buttons */}
-          <motion.div 
+          {/* Buttons */}
+          <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <Button size="lg" className="btn-primary-gradient h-16 px-10 text-lg gap-3 shadow-xl shadow-primary/25">
+              <Button
+                size="lg"
+                onClick={() => navigate("/play")}
+                className="btn-primary-gradient h-16 px-10 text-lg gap-3 shadow-xl shadow-primary/25"
+              >
                 <Play className="h-6 w-6" />
                 Play Now
               </Button>
             </motion.div>
+
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="lg"
@@ -175,53 +157,61 @@ export function HeroSection() {
                 onClick={copyIP}
                 className="h-16 px-10 text-lg gap-3 font-mono border-2 hover:bg-primary/10"
               >
-                {copied ? <Check className="h-6 w-6 text-emerald-500" /> : <Copy className="h-6 w-6" />}
+                {copied ? (
+                  <Check className="h-6 w-6 text-emerald-500" />
+                ) : (
+                  <Copy className="h-6 w-6" />
+                )}
                 play.zcraftmc.xyz:11339
               </Button>
             </motion.div>
           </motion.div>
 
           {/* Stats */}
-          <motion.div 
+          <motion.div
             className="grid grid-cols-3 gap-8 max-w-xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
           >
-              {loadingStats ? (
-              <>
-                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
-                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
-                </div>
-                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
-                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
-                </div>
-                <div className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50">
-                  <div className="h-8 w-28 mx-auto mb-3 animate-pulse bg-muted rounded" />
-                  <div className="h-4 w-24 mx-auto animate-pulse bg-muted rounded" />
-                </div>
-              </>
-            ) : (
-              [
-                { value: stats?.players ?? FALLBACK_STATS.players, label: "Players" },
-                { value: stats?.blocks ?? FALLBACK_STATS.blocks, label: "Blocks Placed" },
-                { value: stats?.uptime ?? FALLBACK_STATS.uptime, label: "Uptime" },
-              ].map((stat, index) => (
-                <motion.div 
-                  key={stat.label} 
-                  className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/50"
-                  whileHover={{ scale: 1.05, backgroundColor: "hsl(var(--card))" }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.9 + index * 0.1 }}
-                >
-                  <p className="font-display text-2xl md:text-4xl font-bold text-primary">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-                </motion.div>
-              ))
-            )}
+            {loadingStats
+              ? Array(3)
+                  .fill(null)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className="text-center p-4 rounded-xl bg-card/50 border border-border/50"
+                    >
+                      <div className="h-8 w-24 mx-auto mb-3 animate-pulse bg-muted rounded" />
+                      <div className="h-4 w-20 mx-auto animate-pulse bg-muted rounded" />
+                    </div>
+                  ))
+              : [
+                  {
+                    value: stats?.players ?? FALLBACK_STATS.players,
+                    label: "Players",
+                  },
+                  {
+                    value: stats?.blocks ?? FALLBACK_STATS.blocks,
+                    label: "Blocks Placed",
+                  },
+                  {
+                    value: stats?.uptime ?? FALLBACK_STATS.uptime,
+                    label: "Uptime",
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="text-center p-4 rounded-xl bg-card/50 border border-border/50"
+                  >
+                    <p className="text-3xl font-bold text-primary">
+                      {stat.value}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
           </motion.div>
         </motion.div>
       </div>
