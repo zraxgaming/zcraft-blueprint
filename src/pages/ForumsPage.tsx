@@ -20,6 +20,7 @@ interface ForumCategory {
   id: string;
   name: string;
   description: string;
+  emoji?: string;
 }
 
 interface ForumThread {
@@ -34,57 +35,45 @@ interface ForumThread {
 export default function ForumsPage() {
   const { user } = useAuth();
 
-  // ✅ HARDCODED SAMPLE CATEGORIES
-  const categories: ForumCategory[] = [
-    {
-      id: "general",
-      name: "General Discussion",
-      description: "Talk about anything related to ZCraft.",
-    },
-    {
-      id: "support",
-      name: "Support & Help",
-      description: "Need help? Ask the community or staff.",
-    },
-    {
-      id: "suggestions",
-      name: "Suggestions",
-      description: "Suggest new features and improvements.",
-    },
-    {
-      id: "bug-reports",
-      name: "Bug Reports",
-      description: "Report issues and glitches here.",
-    },
-    {
-      id: "marketplace",
-      name: "Marketplace",
-      description: "Trade, buy, and sell with other players.",
-    },
-  ];
-
+  const [categories, setCategories] = useState<ForumCategory[]>([]);
   const [latestThreads, setLatestThreads] = useState<ForumThread[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [showNewThread, setShowNewThread] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState("");
   const [newThreadContent, setNewThreadContent] = useState("");
-  const [newThreadForumId, setNewThreadForumId] = useState<string>(
-    categories[0].id
-  );
+  const [newThreadForumId, setNewThreadForumId] = useState<string>("");
 
   useEffect(() => {
-    loadThreads();
+    loadData();
   }, []);
 
-  const loadThreads = async () => {
+  const loadData = async () => {
     try {
-      const threadsData = await forumService.getLatestThreads();
+      const [categoriesData, threadsData] = await Promise.all([
+        forumService.getCategories(),
+        forumService.getLatestThreads(),
+      ]);
+
+      // Add emoji automatically if not stored in DB
+      const enhancedCategories = categoriesData.map((cat: any, index: number) => ({
+        ...cat,
+        emoji:
+          cat.emoji ||
+          ["💬", "🛠️", "💡", "🐛", "💰", "⚔️"][index % 6],
+      }));
+
+      setCategories(enhancedCategories);
       setLatestThreads(threadsData);
+
+      if (enhancedCategories.length > 0) {
+        setNewThreadForumId(enhancedCategories[0].id);
+      }
     } catch (err: any) {
-      setError(err?.message || "Failed to load forums");
-      toast({ title: "Error", description: "Failed to load forum data" });
+      toast({
+        title: "Error",
+        description: err?.message || "Failed to load forum data",
+      });
     } finally {
       setLoading(false);
     }
@@ -93,17 +82,9 @@ export default function ForumsPage() {
   if (loading) {
     return (
       <Layout seo={{ title: "ZCraft Forums" }}>
-        <div className="flex items-center justify-center py-20">
-          <Loader className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center py-20">
+          <Loader className="animate-spin h-8 w-8 text-primary" />
         </div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout seo={{ title: "ZCraft Forums" }}>
-        <div className="py-20 text-center text-red-500">{error}</div>
       </Layout>
     );
   }
@@ -111,44 +92,57 @@ export default function ForumsPage() {
   return (
     <Layout seo={{ title: "ZCraft Forums" }}>
       {/* Hero */}
-      <section className="py-16">
+      <section className="py-16 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">
-            Community <span className="text-primary">Forums</span>
+          <h1 className="text-5xl font-bold mb-4">
+            ZCraft <span className="text-primary">Forums</span>
           </h1>
+          <p className="text-muted-foreground mb-8">
+            Join discussions, share ideas, and connect with the community.
+          </p>
           <div className="relative max-w-xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              placeholder="Search forums..."
-              className="pl-12 h-12"
-            />
+            <Input className="pl-12 h-12" placeholder="Search threads..." />
           </div>
         </div>
       </section>
 
       {/* Main */}
-      <section className="pb-16">
+      <section className="py-12">
         <div className="container mx-auto px-4 grid lg:grid-cols-3 gap-8">
           {/* Categories */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Categories</h2>
               <Badge>{categories.length}</Badge>
             </div>
 
-            {categories.map((category) => (
-              <Card key={category.id} className="cursor-pointer hover:shadow-lg transition">
-                <CardContent className="p-6 flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
-                  </div>
-                  <ChevronRight />
+            {categories.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  No categories found in database.
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              categories.map((category) => (
+                <Card
+                  key={category.id}
+                  className="hover:shadow-lg transition cursor-pointer border-0 bg-card"
+                >
+                  <CardContent className="p-6 flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {category.emoji} {category.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {category.description}
+                      </p>
+                    </div>
+                    <ChevronRight />
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
           {/* Sidebar */}
@@ -156,7 +150,7 @@ export default function ForumsPage() {
             {/* Stats */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex gap-2 items-center">
                   <TrendingUp className="h-5 w-5 text-primary" />
                   Forum Stats
                 </CardTitle>
@@ -181,37 +175,6 @@ export default function ForumsPage() {
               </CardContent>
             </Card>
 
-            {/* Latest Threads */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Latest Threads
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {latestThreads.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No threads yet
-                  </p>
-                ) : (
-                  latestThreads.map((thread) => (
-                    <div
-                      key={thread.id}
-                      className="p-3 rounded bg-muted hover:bg-muted/70 transition cursor-pointer"
-                    >
-                      <h4 className="text-sm font-medium">
-                        {thread.title}
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {thread.replies_count} replies
-                      </p>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-
             {/* Create Thread */}
             <Card>
               <CardContent className="p-6">
@@ -220,12 +183,12 @@ export default function ForumsPage() {
                     <MessageSquare className="h-8 w-8 text-primary mb-3" />
                     <Button
                       className="w-full"
+                      disabled={categories.length === 0}
                       onClick={() => {
                         if (!user) {
                           toast({
                             title: "Login required",
-                            description:
-                              "Please log in to create a thread.",
+                            description: "Please log in first.",
                           });
                           return;
                         }
@@ -237,9 +200,8 @@ export default function ForumsPage() {
                   </>
                 ) : (
                   <div className="space-y-3">
-                    <input
+                    <Input
                       placeholder="Thread title"
-                      className="w-full p-2 rounded bg-muted"
                       value={newThreadTitle}
                       onChange={(e) =>
                         setNewThreadTitle(e.target.value)
@@ -247,7 +209,7 @@ export default function ForumsPage() {
                     />
 
                     <select
-                      className="w-full p-2 rounded bg-muted"
+                      className="w-full p-2 rounded-md bg-muted"
                       value={newThreadForumId}
                       onChange={(e) =>
                         setNewThreadForumId(e.target.value)
@@ -255,14 +217,14 @@ export default function ForumsPage() {
                     >
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>
-                          {c.name}
+                          {c.emoji} {c.name}
                         </option>
                       ))}
                     </select>
 
                     <textarea
                       placeholder="Write your thread..."
-                      className="w-full p-2 rounded bg-muted min-h-[120px]"
+                      className="w-full p-2 rounded-md bg-muted min-h-[120px]"
                       value={newThreadContent}
                       onChange={(e) =>
                         setNewThreadContent(e.target.value)
@@ -272,13 +234,35 @@ export default function ForumsPage() {
                     <div className="flex gap-2">
                       <Button
                         className="flex-1"
-                        onClick={() =>
-                          toast({
-                            title: "Thread created (demo)",
-                            description:
-                              "This is currently using sample categories.",
-                          })
-                        }
+                        disabled={!newThreadForumId}
+                        onClick={async () => {
+                          try {
+                            await forumService.createForumPost({
+                              forum_id: newThreadForumId,
+                              author_id: user?.id,
+                              title: newThreadTitle,
+                              content: newThreadContent,
+                            } as any);
+
+                            toast({
+                              title: "Thread created",
+                              description:
+                                "Your thread has been posted.",
+                            });
+
+                            setShowNewThread(false);
+                            setNewThreadTitle("");
+                            setNewThreadContent("");
+                            loadData();
+                          } catch (err: any) {
+                            toast({
+                              title: "Error",
+                              description:
+                                err?.message ||
+                                "Failed to create thread",
+                            });
+                          }
+                        }}
                       >
                         Post Thread
                       </Button>
