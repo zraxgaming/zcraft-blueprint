@@ -3,14 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  MessageSquare,
-  Clock,
-  TrendingUp,
-  ChevronRight,
-  Loader,
-} from "lucide-react";
+import { Search, MessageSquare, Clock, TrendingUp, ChevronRight, Loader } from "lucide-react";
 import { useState, useEffect } from "react";
 import { forumService } from "@/services/forumService";
 import { toast } from "@/components/ui/use-toast";
@@ -38,13 +31,10 @@ export default function ForumsPage() {
 
   const [latestThreads, setLatestThreads] = useState<ForumThread[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [showNewThread, setShowNewThread] = useState(false);
   const [newThreadTitle, setNewThreadTitle] = useState("");
   const [newThreadContent, setNewThreadContent] = useState("");
-  const [newThreadCategory, setNewThreadCategory] = useState(
-    FORUM_CATEGORIES[0].value
-  );
+  const [newThreadCategory, setNewThreadCategory] = useState(FORUM_CATEGORIES[0].value);
 
   useEffect(() => {
     loadThreads();
@@ -92,10 +82,10 @@ export default function ForumsPage() {
         </div>
       </section>
 
-      {/* Main */}
+      {/* Main Content */}
       <section className="py-12">
         <div className="container mx-auto px-4 grid lg:grid-cols-3 gap-8">
-          {/* Categories Display */}
+          {/* Categories */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Categories</h2>
@@ -109,9 +99,7 @@ export default function ForumsPage() {
               >
                 <CardContent className="p-6 flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg">
-                      {category.label}
-                    </h3>
+                    <h3 className="font-semibold text-lg">{category.label}</h3>
                     <p className="text-sm text-muted-foreground">
                       Discuss topics related to {category.value}.
                     </p>
@@ -124,7 +112,7 @@ export default function ForumsPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Stats (static for now) */}
+            {/* Stats (static) */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex gap-2 items-center">
@@ -171,17 +159,13 @@ export default function ForumsPage() {
                     <Input
                       placeholder="Thread title"
                       value={newThreadTitle}
-                      onChange={(e) =>
-                        setNewThreadTitle(e.target.value)
-                      }
+                      onChange={(e) => setNewThreadTitle(e.target.value)}
                     />
 
                     <select
                       className="w-full p-2 rounded-md bg-muted"
                       value={newThreadCategory}
-                      onChange={(e) =>
-                        setNewThreadCategory(e.target.value)
-                      }
+                      onChange={(e) => setNewThreadCategory(e.target.value)}
                     >
                       {FORUM_CATEGORIES.map((c) => (
                         <option key={c.value} value={c.value}>
@@ -194,27 +178,29 @@ export default function ForumsPage() {
                       placeholder="Write your thread..."
                       className="w-full p-2 rounded-md bg-muted min-h-[120px]"
                       value={newThreadContent}
-                      onChange={(e) =>
-                        setNewThreadContent(e.target.value)
-                      }
+                      onChange={(e) => setNewThreadContent(e.target.value)}
                     />
 
                     <div className="flex gap-2">
                       <Button
                         className="flex-1"
                         onClick={async () => {
+                          if (!newThreadTitle || !newThreadContent || !newThreadCategory) {
+                            toast({ title: "Error", description: "All fields are required." });
+                            return;
+                          }
+
                           try {
                             await forumService.createForumPost({
                               title: newThreadTitle,
                               content: newThreadContent,
-                              category: newThreadCategory, // 🔥 Saved to column
+                              category: newThreadCategory,
                               author_id: user?.id,
                             } as any);
 
                             toast({
                               title: "Thread created",
-                              description:
-                                "Your thread has been posted.",
+                              description: "Your thread has been posted.",
                             });
 
                             setShowNewThread(false);
@@ -224,9 +210,7 @@ export default function ForumsPage() {
                           } catch (err: any) {
                             toast({
                               title: "Error",
-                              description:
-                                err?.message ||
-                                "Failed to create thread",
+                              description: err?.message || "Failed to create thread",
                             });
                           }
                         }}
@@ -256,19 +240,19 @@ export default function ForumsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {latestThreads.map((thread) => (
-                  <div
-                    key={thread.id}
-                    className="p-3 rounded bg-muted hover:bg-muted/70 transition cursor-pointer"
-                  >
-                    <h4 className="text-sm font-medium">
-                      {thread.title}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      {thread.category}
-                    </p>
-                  </div>
-                ))}
+                {latestThreads.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No threads yet.</p>
+                ) : (
+                  latestThreads.map((thread) => (
+                    <div
+                      key={thread.id}
+                      className="p-3 rounded bg-muted hover:bg-muted/70 transition cursor-pointer"
+                    >
+                      <h4 className="text-sm font-medium">{thread.title}</h4>
+                      <p className="text-xs text-muted-foreground">{thread.category}</p>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
           </div>
