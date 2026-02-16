@@ -96,7 +96,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 ZCraft. Not affiliated with Mojang AB.
+            © 2026 ZCraft. Not affiliated with Mojang AB.
           </p>
           <p className="text-sm text-muted-foreground font-mono">
             play.zcraftmc.xyz:11339 | bedrock.zcraftmc.xyz:11339
