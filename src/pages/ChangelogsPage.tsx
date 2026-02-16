@@ -53,7 +53,13 @@ export default function ChangelogsPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <Layout seo={{
+        title: "Changelogs - ZCraft Network",
+        description: "View all ZCraft Network updates, patches, and changelogs.",
+        keywords: "changelogs, updates, patches, zcraft network",
+        url: "https://z-craft.xyz/events",
+        type: "website",
+      }}>
         <div className="flex items-center justify-center py-20">
           <Loader className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -63,7 +69,13 @@ export default function ChangelogsPage() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout seo={{
+        title: "Changelogs - ZCraft Network",
+        description: "View all ZCraft Network updates, patches, and changelogs.",
+        keywords: "changelogs, updates, patches, zcraft network",
+        url: "https://z-craft.xyz/events",
+        type: "website",
+      }}>
         <div className="py-20 text-center text-red-500">{error}</div>
       </Layout>
     );

@@ -66,12 +66,21 @@ async function main() {
         }
       }
 
-      // Fetch recent forum threads (limit configurable via SITEMAP_FORUM_LIMIT)
-      const forumLimit = parseInt(process.env.SITEMAP_FORUM_LIMIT || '500', 10);
-      const { data: threads } = await supabase.from('forum_posts').select('id, title, updated_at, created_at').order('created_at', { ascending: false }).limit(forumLimit);
+      // Fetch forum slugs and threads
+      const { data: forums } = await supabase.from('forums').select('slug, updated_at').limit(1000);
+      if (forums) {
+        for (const f of forums) {
+          // Add forum category page
+          dynamicUrls.push({ loc: `/forums/${f.slug}`, lastmod: f.updated_at?.slice(0,10) || null, changefreq: 'weekly', priority: '0.7' });
+        }
+      }
+
+      // Fetch forum threads/posts with their forum slug
+      const { data: threads } = await supabase.from('forum_posts').select('id, forum:forums(slug), updated_at, created_at').order('created_at', { ascending: false }).limit(1000);
       if (threads) {
         for (const t of threads) {
-          dynamicUrls.push({ loc: `/forums/${t.id}`, lastmod: (t.updated_at || t.created_at)?.slice(0,10) || null, changefreq: 'weekly' });
+          const forumSlug = t.forum?.slug || 'general';
+          dynamicUrls.push({ loc: `/forums/${forumSlug}/${t.id}`, lastmod: (t.updated_at || t.created_at)?.slice(0,10) || null, changefreq: 'monthly', priority: '0.6' });
         }
       }
     } catch (err) {

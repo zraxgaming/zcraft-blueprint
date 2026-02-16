@@ -57,7 +57,13 @@ export default function LoginPage() {
     }
   };
   return (
-    <Layout>
+    <Layout seo={{
+      title: "Login - ZCraft Network",
+      description: "Login to your ZCraft Network account to access forums, profiles, and more.",
+      keywords: "login, account, zcraft network",
+      url: "https://z-craft.xyz/login",
+      type: "website",
+    }}>
       <section className="py-16 lg:py-24 min-h-[70vh] flex items-center">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto border-0 bg-card card-hover">

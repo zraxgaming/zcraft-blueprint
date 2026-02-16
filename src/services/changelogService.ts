@@ -10,6 +10,7 @@ export interface Changelog {
   description: string;
   changes: string[];
   type: ChangelogType;
+  image_url: string | null;
   released_at: string;
   created_at: string;
 }
@@ -144,4 +145,15 @@ export const changelogService = {
   createChangelog,
   updateChangelog,
   deleteChangelog,
+  updateChangelogImage: async (id: string, imageUrl: string) => {
+    const { data, error } = await supabase
+      .from('changelogs')
+      .update({ image_url: imageUrl })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Changelog;
+  },
 };

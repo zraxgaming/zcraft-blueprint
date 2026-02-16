@@ -12,9 +12,11 @@ import {
   Sun,
   Bell,
   Menu,
-  X
+  X,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -35,10 +37,20 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
   const [isDark, setIsDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { logout } = useAuth();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
   return (
@@ -56,7 +68,7 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div>
             <h2 className="font-display text-xl font-bold text-primary">Admin Panel</h2>
-            <p className="text-sm text-muted-foreground">ZCraft Management</p>
+            <p className="text-sm text-muted-foreground">ZCraft Network</p>
           </div>
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
@@ -83,10 +95,22 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
             );
           })}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-          <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border space-y-2">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 rounded hover:bg-muted"
+          >
             ← Back to Website
           </Link>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full justify-start gap-2" 
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
         </div>
       </aside>
 
@@ -101,11 +125,29 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
             <h1 className="font-display text-2xl font-bold">{title}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle theme">
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              title="Notifications"
+              onClick={() => {
+                // In production, this would open a notifications panel
+                const event = new CustomEvent("toggle-notifications");
+                window.dispatchEvent(event);
+              }}
+            >
               <Bell className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </header>

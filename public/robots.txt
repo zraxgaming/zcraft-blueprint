@@ -1,16 +1,51 @@
-User-agent: Googlebot
-Allow: /
+# Robots.txt for ZCraft Network
+# Generated for https://z-craft.xyz
 
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Allow all bots to crawl the site
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /maintenance
 
+# Google-specific
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /maintenance
+Crawl-delay: 0
+
+# Bing-specific
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /maintenance
+Crawl-delay: 1
+
+# Other search engines
+User-agent: Slurp
+Allow: /
+Disallow: /admin
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /admin
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /admin
+
+User-agent: YandexBot
+Allow: /
+Disallow: /admin
+
+# Sitemaps
 Sitemap: https://z-craft.xyz/sitemap.xml
+
+# Crawl delay for other bots
+User-agent: *
+Crawl-delay: 1
+Request-rate: 30/60

@@ -24,7 +24,13 @@ const searchResults = {
 
 export default function SearchPage() {
   return (
-    <Layout>
+    <Layout seo={{
+      title: "Search ZCraft Network",
+      description: "Search the ZCraft Network website for forums, news, wiki articles, changelogs, and more.",
+      keywords: "search, zcraft network, minecraft",
+      url: "https://z-craft.xyz/search",
+      type: "website",
+    }}>
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">

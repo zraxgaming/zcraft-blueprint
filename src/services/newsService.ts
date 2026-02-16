@@ -142,4 +142,15 @@ export const newsService = {
   createNews,
   updateNews,
   deleteNews,
+  updateNewsImage: async (id: string, imageUrl: string) => {
+    const { data, error } = await supabase
+      .from('news')
+      .update({ image_url: imageUrl })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as NewsArticle;
+  },
 };

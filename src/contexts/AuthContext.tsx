@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sendWebhook, WebhookEvent } from '@/services/webhookService';
+import { uploadProfilePicture } from '@/services/storageService';
 
 export type AppRole = 'admin' | 'moderator' | 'user';
 
@@ -24,6 +25,7 @@ interface AuthContextType {
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfilePicture: (file: File) => Promise<string>;
   signInWithDiscord: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -196,6 +198,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateProfilePicture = async (file: File): Promise<string> => {
+    if (!user) throw new Error('No user logged in');
+
+    // Upload image to storage
+    const result = await uploadProfilePicture(file, user.id);
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    // Update user profile with new avatar URL
+    await updateProfile({ avatar_url: result.url });
+
+    return result.url;
+  };
+
   const signInWithDiscord = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
@@ -238,6 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     updateProfile,
+    updateProfilePicture,
     signInWithDiscord,
     signInWithGithub,
     signInWithGoogle,
