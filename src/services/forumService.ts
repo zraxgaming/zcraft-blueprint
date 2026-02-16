@@ -76,6 +76,17 @@ export async function getForumPosts(forumId: string, limit: number = 20, offset:
   return (data || []) as ForumPost[];
 }
 
+export async function getForumPostById(id: string) {
+  const { data, error } = await supabase
+    .from('forum_posts')
+    .select('*, author:users!forum_posts_author_id_fkey(id, username, avatar_url)')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data as ForumPost;
+}
+
 export async function createForum(forum: Omit<Forum, 'id' | 'created_at' | 'post_count' | 'reply_count' | 'last_post_date'>) {
   const { data, error } = await supabase
     .from('forums')
@@ -232,6 +243,88 @@ export async function deleteForumPost(id: string) {
   }
 }
 
+// Forum reply functions (client-side management)
+export async function createForumReply(reply: { post_id: string; author_id: string; content: string }) {
+  // Store reply in localStorage temporarily
+  const repliesKey = `forum_replies_${reply.post_id}`;
+  const replies = JSON.parse(localStorage.getItem(repliesKey) || '[]');
+  const newReply = {
+    id: `reply_${Date.now()}`,
+    ...reply,
+    created_at: new Date().toISOString(),
+    is_staff: false,
+    likes: 0,
+  };
+  replies.push(newReply);
+  localStorage.setItem(repliesKey, JSON.stringify(replies));
+  return newReply;
+}
+
+export async function deleteForumReply(id: string) {
+  // This is a simplified implementation
+  // In production, this would delete from database
+  // For now, we'll just remove from any stored replies
+  const allKeys = Object.keys(localStorage);
+  for (const key of allKeys) {
+    if (key.startsWith('forum_replies_')) {
+      const replies = JSON.parse(localStorage.getItem(key) || '[]');
+      const filtered = replies.filter((r: any) => r.id !== id);
+      localStorage.setItem(key, JSON.stringify(filtered));
+    }
+  }
+}
+
+// Like functions using client-side state (stored in memory/localStorage)
+export async function likeForumPost(postId: string, userId: string) {
+  // Optimistic like - store in localStorage
+  const likesKey = `forum_post_likes_${postId}`;
+  const likes = JSON.parse(localStorage.getItem(likesKey) || '[]');
+  if (!likes.includes(userId)) {
+    likes.push(userId);
+    localStorage.setItem(likesKey, JSON.stringify(likes));
+  }
+  return { id: postId, user_id: userId };
+}
+
+export async function unlikeForumPost(postId: string, userId: string) {
+  // Remove like from localStorage
+  const likesKey = `forum_post_likes_${postId}`;
+  const likes = JSON.parse(localStorage.getItem(likesKey) || '[]');
+  const filtered = likes.filter((id: string) => id !== userId);
+  localStorage.setItem(likesKey, JSON.stringify(filtered));
+}
+
+export async function likeForumReply(replyId: string, userId: string) {
+  // Optimistic like for reply
+  const likesKey = `forum_reply_likes_${replyId}`;
+  const likes = JSON.parse(localStorage.getItem(likesKey) || '[]');
+  if (!likes.includes(userId)) {
+    likes.push(userId);
+    localStorage.setItem(likesKey, JSON.stringify(likes));
+  }
+  return { id: replyId, user_id: userId };
+}
+
+export async function unlikeForumReply(replyId: string, userId: string) {
+  // Remove like from localStorage
+  const likesKey = `forum_reply_likes_${replyId}`;
+  const likes = JSON.parse(localStorage.getItem(likesKey) || '[]');
+  const filtered = likes.filter((id: string) => id !== userId);
+  localStorage.setItem(likesKey, JSON.stringify(filtered));
+}
+
+export async function getForumPostLikes(postId: string) {
+  // Get likes from localStorage
+  const likesKey = `forum_post_likes_${postId}`;
+  return JSON.parse(localStorage.getItem(likesKey) || '[]');
+}
+
+export async function getForumReplyLikes(replyId: string) {
+  // Get likes from localStorage
+  const likesKey = `forum_reply_likes_${replyId}`;
+  return JSON.parse(localStorage.getItem(likesKey) || '[]');
+}
+
 export async function getCategories() {
   const { data, error } = await supabase
     .from('forums')
@@ -289,12 +382,21 @@ export const forumService = {
   getForumById,
   getForumBySlug,
   getForumPosts,
+  getForumPostById,
   createForum,
   updateForum,
   deleteForum,
   createForumPost,
   updateForumPost,
   deleteForumPost,
+  createForumReply,
+  deleteForumReply,
+  likeForumPost,
+  unlikeForumPost,
+  likeForumReply,
+  unlikeForumReply,
+  getForumPostLikes,
+  getForumReplyLikes,
   getCategories,
   getLatestThreads,
   getAllThreads,

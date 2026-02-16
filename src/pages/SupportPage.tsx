@@ -56,7 +56,13 @@ const faqs = [
 
 export default function SupportPage() {
   return (
-    <Layout>
+    <Layout seo={{
+      title: "Support - ZCraft Network",
+      description: "Get help and support for ZCraft Network. FAQ, guides, troubleshooting, and community support.",
+      keywords: "support, help, faq, zcraft network",
+      url: "https://z-craft.xyz/support",
+      type: "website",
+    }}>
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

@@ -5,6 +5,7 @@ import { Crown, Shield, Star, Heart, Loader, LucideIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
+import { getMinecraftPlayerImage } from "@/services/minecraftService";
 
 interface StaffMember {
   id: string;
@@ -14,11 +15,6 @@ interface StaffMember {
   created_at: string;
   avatar_url?: string;
   minecraft_name?: string;
-}
-
-interface NameMCResponse {
-  name: string;
-  id: string;
 }
 
 interface RoleGroup {
@@ -39,25 +35,21 @@ export default function StaffPage() {
     loadStaff();
   }, []);
 
-  const getNameMCSkin = async (username: string): Promise<string> => {
+  const getMinecraftHeadImage = async (username: string): Promise<string> => {
     // Check cache first
     if (skinCache[username]) {
       return skinCache[username];
     }
 
     try {
-      const response = await fetch(`https://api.namemc.com/profile/${username}`);
-      if (response.ok) {
-        const data: NameMCResponse = await response.json();
-        const skinUrl = `https://crafatar.com/renders/head/${data.id}?scale=8`;
-        setSkinCache((prev) => ({ ...prev, [username]: skinUrl }));
-        return skinUrl;
-      }
+      const imageUrl = await getMinecraftPlayerImage(username, 'head', 64);
+      setSkinCache((prev) => ({ ...prev, [username]: imageUrl }));
+      return imageUrl;
     } catch (err) {
-      console.error(`Failed to fetch skin for ${username}:`, err);
+      console.error(`Failed to fetch Minecraft head for ${username}:`, err);
+      // Return fallback emoji
+      return "";
     }
-    // Return fallback avatar URL or empty
-    return "";
   };
 
   const loadStaff = async () => {
@@ -74,7 +66,7 @@ export default function StaffPage() {
       const membersWithSkins = await Promise.all(
         (data || []).map(async (user: StaffMember) => {
           const minecraftName = user.minecraft_name || user.username;
-          const skinUrl = await getNameMCSkin(minecraftName);
+          const skinUrl = await getMinecraftHeadImage(minecraftName);
           return {
             ...user,
             avatar_url: skinUrl || user.avatar_url,
@@ -123,7 +115,13 @@ export default function StaffPage() {
   }
 
   return (
-    <Layout>
+    <Layout seo={{
+      title: "Staff - ZCraft Network",
+      description: "Meet the ZCraft Network staff team. Admins, moderators, and helpers dedicated to the community.",
+      keywords: "staff, team, admin, moderator, zcraft network",
+      url: "https://z-craft.xyz/staff",
+      type: "website",
+    }}>
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

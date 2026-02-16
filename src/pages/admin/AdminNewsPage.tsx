@@ -28,8 +28,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ImageUpload";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { newsService, NewsArticle } from "@/services/newsService";
+import { uploadNewsImage } from "@/services/storageService";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 

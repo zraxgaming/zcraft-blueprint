@@ -8,7 +8,13 @@ import { ArrowLeft } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   return (
-    <Layout>
+    <Layout seo={{
+      title: "Forgot Password - ZCraft Network",
+      description: "Reset your ZCraft Network account password.",
+      keywords: "password reset, forgot password, zcraft network",
+      url: "https://z-craft.xyz/forgot-password",
+      type: "website",
+    }}>
       <section className="py-16 lg:py-24 min-h-[70vh] flex items-center">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto border-0 bg-card card-hover">

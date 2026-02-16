@@ -14,7 +14,7 @@ export function Seo({
   title = "ZCraft Network — Minecraft Lifesteal & Survival Servers",
   description = "ZCraft Network — premium Minecraft servers featuring lifesteal, survival, factions, economy, and active community events.",
   keywords = "Minecraft server, lifesteal, minecraft lifesteal, zcraft, zcraft network, minecraft survival",
-  image = "/assets/og-image.svg",
+  image = "/zcraft.png",
   url = "https://z-craft.xyz/",
   type = 'website',
   publishedTime,
@@ -45,7 +45,7 @@ export function Seo({
     };
 
     // Ensure absolute URLs for image and url
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const origin = 'https://z-craft.xyz';
     const absoluteUrl = url?.startsWith('http') ? url : `${origin}${url}`;
     const absoluteImage = image?.startsWith('http') ? image : `${origin}${image}`;
 
