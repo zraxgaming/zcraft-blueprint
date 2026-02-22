@@ -8,11 +8,7 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 const EXTERNAL_LISTINGS = [
-  {
-    name: "Minecraft IP List",
-    url: "https://www.minecraftiplist.com/server/ZCraftNetwork-3914",
-    host: "play.zcraftmc.xyz:11339",
-  },
+  
   { name: "Minecraft-ServerList", url: "https://minecraft-serverlist.com/server/4150", host: "play.zcraftmc.xyz:11339" },
   { name: "FindMCServer", url: "https://findmcserver.com/server/MSUIYCwRaD", host: "play.zcraftmc.xyz:11339" },
   { name: "Minecraft.buzz", url: "https://minecraft.buzz/server/18736", host: "play.zcraftmc.xyz:11339" },
