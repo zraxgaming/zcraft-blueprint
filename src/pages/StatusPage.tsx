@@ -12,7 +12,7 @@ export default function StatusPage() {
   return (
     <Layout
       seo={{
-        title: "Status — ZCraft Network",
+        title: "Status - ZCraft Network",
         description: "Live status and incident reports for ZCraft Network services.",
         url: "https://z-craft.xyz/status",
       }}
@@ -26,3 +26,4 @@ export default function StatusPage() {
     </Layout>
   );
 }
+

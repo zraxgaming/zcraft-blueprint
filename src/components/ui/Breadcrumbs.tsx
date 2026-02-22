@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import React from "react";
 
 export interface Crumb {
@@ -14,9 +14,15 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
         {crumbs.map((c, i) => (
           <li key={i} className="flex items-center">
             {c.href ? (
-              <a href={c.href} className="hover:underline">
-                {c.label}
-              </a>
+              c.href.startsWith("http") ? (
+                <a href={c.href} className="hover:underline" rel="noopener noreferrer">
+                  {c.label}
+                </a>
+              ) : (
+                <Link to={c.href} className="hover:underline">
+                  {c.label}
+                </Link>
+              )
             ) : (
               <span>{c.label}</span>
             )}

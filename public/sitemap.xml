@@ -71,6 +71,11 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://z-craft.xyz/changelogs/1.0.2</loc>
+    <lastmod>2026-02-18</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://z-craft.xyz/events/8b4273db-838b-49b9-bbdc-89d8beb063c8</loc>
     <lastmod>2026-01-22</lastmod>
     <changefreq>weekly</changefreq>

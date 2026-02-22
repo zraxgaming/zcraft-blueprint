@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowRight, Loader } from "lucide-react";
+import { Calendar, ArrowRight, Loader, Rss } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { newsService, NewsArticle } from "@/services/newsService";
@@ -43,15 +43,27 @@ export default function NewsPage() {
 
   const featuredPost = posts[0];
   const otherPosts = posts.slice(1);
-  
+
   return (
     <Layout
       seo={{
-        title: "ZCraft News — Announcements, Updates & Events",
+        title: "ZCraft News - Announcements, Updates & Events",
         description: "Official ZCraft Network announcements, event news, and update notes. Stay informed about server changes and upcoming events.",
         keywords: "zcraft news, minecraft server news, lifesteal events, zcraft updates",
         url: "https://z-craft.xyz/news",
+        breadcrumbs: [
+          { label: "Home", href: "/" },
+          { label: "News", href: "/news" },
+        ],
+        rssLinks: [
+          { title: "ZCraft News RSS", href: "https://z-craft.xyz/rss/news.xml" },
+          { title: "ZCraft Changelogs RSS", href: "https://z-craft.xyz/rss/changelogs.xml" },
+        ],
       }}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "News", href: "/news" },
+      ]}
     >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
@@ -64,6 +76,17 @@ export default function NewsPage() {
             <p className="text-xl text-muted-foreground">
               Stay updated with server announcements, events, and updates.
             </p>
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <a href="/rss/news.xml" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+                <Rss className="h-4 w-4" /> Subscribe via RSS
+              </a>
+              <a
+                href="/rss/changelogs.xml"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+              >
+                <Rss className="h-4 w-4" /> Changelogs feed
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -142,7 +165,7 @@ export default function NewsPage() {
                           <div className="flex items-center justify-center bg-muted/50 py-8 text-5xl">
                             {post.image_url ? (
                               <img src={post.image_url} alt={post.title} className="w-full h-32 object-cover" />
-                            ) : "📄"}
+                            ) : "📰"}
                           </div>
                           <div className="p-6">
                             <Badge className={`mb-3 ${getTagColor(post.slug)}`}>

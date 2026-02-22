@@ -6,7 +6,7 @@ export default function TermsPage() {
   return (
     <Layout
       seo={{
-        title: "Terms of Service — ZCraft Network",
+        title: "Terms of Service - ZCraft Network",
         description: "Terms of Service for ZCraft Network. Rules for using our Minecraft servers, forums, and services.",
         url: "https://z-craft.xyz/terms",
       }}
@@ -98,3 +98,4 @@ export default function TermsPage() {
     </Layout>
   );
 }
+

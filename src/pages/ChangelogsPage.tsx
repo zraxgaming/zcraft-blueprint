@@ -1,11 +1,12 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GitCommit, Loader } from "lucide-react";
+import { GitCommit, Loader, Rss, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 interface Changelog {
   id: string;
@@ -72,12 +73,21 @@ export default function ChangelogsPage() {
   return (
     <Layout
       seo={{
-        title: 'Changelogs — ZCraft',
-        description: 'Read the latest release notes and changelogs for ZCraft server updates, features, and fixes.',
-        keywords: 'zcraft changelogs, release notes, zcraft updates',
-        url: 'https://z-craft.xyz/changelogs',
-        type: 'website',
+        title: "Changelogs - ZCraft",
+        description: "Read the latest release notes and changelogs for ZCraft server updates, features, and fixes.",
+        keywords: "zcraft changelogs, release notes, zcraft updates",
+        url: "https://z-craft.xyz/changelogs",
+        type: "website",
+        breadcrumbs: [
+          { label: "Home", href: "/" },
+          { label: "Changelogs", href: "/changelogs" },
+        ],
+        rssLinks: [{ title: "ZCraft Changelogs RSS", href: "https://z-craft.xyz/rss/changelogs.xml" }],
       }}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Changelogs", href: "/changelogs" },
+      ]}
     >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
@@ -111,44 +121,40 @@ export default function ChangelogsPage() {
                 {changelogs.map((changelog) => {
                   const typeInfo = typeConfig[changelog.type as keyof typeof typeConfig];
                   return (
-                    <Card key={changelog.id} className="card-hover border-0 bg-card overflow-hidden">
-                      <CardHeader className="border-b pb-4">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                              <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
-                              <span className="text-sm text-muted-foreground font-mono">v{changelog.version}</span>
+                    <Link key={changelog.id} to={`/changelogs/${encodeURIComponent(changelog.version)}`}>
+                      <Card className="card-hover border-0 bg-card overflow-hidden group">
+                        <CardHeader className="border-b pb-4">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
+                                <span className="text-sm text-muted-foreground font-mono">v{changelog.version}</span>
+                              </div>
+                              <CardTitle className="text-2xl group-hover:text-primary transition-colors">
+                                {changelog.title}
+                              </CardTitle>
                             </div>
-                            <CardTitle className="text-2xl">{changelog.title}</CardTitle>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground whitespace-nowrap">
+                                {new Date(changelog.released_at).toLocaleDateString(undefined, {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm text-muted-foreground whitespace-nowrap">
-                              {new Date(changelog.released_at).toLocaleDateString(undefined, {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-6">
-                        <p className="text-muted-foreground mb-4">{changelog.description}</p>
-                        {changelog.changes && changelog.changes.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold text-sm mb-3">Changes:</h4>
-                            <ul className="space-y-2">
-                              {changelog.changes.map((change, idx) => (
-                                <li key={idx} className="flex items-start gap-3 text-sm">
-                                  <span className="mt-1.5 h-2 w-2 rounded-full bg-primary shrink-0" />
-                                  <span>{change}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <p className="text-muted-foreground mb-4">{changelog.description}</p>
+                          {changelog.changes && changelog.changes.length > 0 && (
+                            <div className="flex items-center gap-2 text-sm text-primary font-semibold">
+                              View details <ArrowRight className="h-4 w-4" />
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
                   );
                 })}
               </div>
@@ -166,9 +172,14 @@ export default function ChangelogsPage() {
               <p className="text-muted-foreground mb-6">
                 Join our Discord to be the first to know about new features and updates.
               </p>
-              <a href="https://discord.z-craft.xyz" target="_blank" rel="noopener noreferrer">
-                <Button className="btn-primary-gradient">Join Discord</Button>
-              </a>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="https://discord.z-craft.xyz" target="_blank" rel="noopener noreferrer">
+                  <Button className="btn-primary-gradient">Join Discord</Button>
+                </a>
+                <a href="/rss/changelogs.xml" className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+                  <Rss className="h-4 w-4" /> RSS feed
+                </a>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -16,7 +16,7 @@ export function Layout({ children, seo, breadcrumbs }: LayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Seo {...(seo || {})} />
+      <Seo {...(seo || {})} breadcrumbs={breadcrumbs} />
       <Navbar />
       {settings?.announcementEnabled && settings?.announcementMessage && (
         <div className="bg-primary/10 text-primary px-4 py-2 text-center">

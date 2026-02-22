@@ -7,9 +7,9 @@ const Index = () => {
   return (
     <Layout
       seo={{
-        title: "ZCraft Network — Play Lifesteal & Survival Minecraft Servers",
+        title: "ZCraft Network - Play Lifesteal & Survival Minecraft Servers",
         description:
-          "Play ZCraft Network — top Minecraft lifesteal servers with active events, custom plugins, economy, and a friendly community. Join now to experience lifesteal gameplay.",
+          "Play ZCraft Network - top Minecraft lifesteal servers with active events, custom plugins, economy, and a friendly community. Join now to experience lifesteal gameplay.",
         keywords:
           "ZCraft, ZCraft Network, Minecraft lifesteal, lifesteal server, minecraft server, play minecraft",
         url: "https://z-craft.xyz/",
@@ -23,3 +23,4 @@ const Index = () => {
 };
 
 export default Index;
+

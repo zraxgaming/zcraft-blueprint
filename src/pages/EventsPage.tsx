@@ -52,12 +52,20 @@ export default function EventsPage() {
   return (
     <Layout
       seo={{
-        title: 'Server Events — ZCraft',
-        description: 'Join exciting events on ZCraft — tournaments, building contests, seasonal events, and more.',
-        keywords: 'zcraft events, server events, minecraft events',
-        url: 'https://z-craft.xyz/events',
-        type: 'website',
+        title: "Server Events - ZCraft",
+        description: "Join exciting events on ZCraft - tournaments, building contests, seasonal events, and more.",
+        keywords: "zcraft events, server events, minecraft events",
+        url: "https://z-craft.xyz/events",
+        type: "website",
+        breadcrumbs: [
+          { label: "Home", href: "/" },
+          { label: "Events", href: "/events" },
+        ],
       }}
+      breadcrumbs={[
+        { label: "Home", href: "/" },
+        { label: "Events", href: "/events" },
+      ]}
     >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">

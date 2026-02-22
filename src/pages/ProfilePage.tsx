@@ -50,7 +50,7 @@ export default function ProfilePage() {
     return (
       <Layout
         seo={{
-          title: "Profile — ZCraft Network",
+          title: "Profile - ZCraft Network",
           description: "View and manage your ZCraft profile, posts, and settings.",
           keywords: "zcraft profile, player profile, minecraft account",
           url: "https://z-craft.xyz/profile",
@@ -67,7 +67,7 @@ export default function ProfilePage() {
     return (
       <Layout
         seo={{
-          title: "Profile — ZCraft Network",
+          title: "Profile - ZCraft Network",
           description: "View and manage your ZCraft profile, posts, and settings.",
           keywords: "zcraft profile, player profile, minecraft account",
           url: "https://z-craft.xyz/profile",
@@ -88,7 +88,7 @@ export default function ProfilePage() {
   return (
     <Layout
       seo={{
-        title: `Profile — ${userProfile.username} | ZCraft Network`,
+        title: `Profile - ${userProfile.username} | ZCraft Network`,
         description: `${userProfile.username}'s profile on ZCraft Network. View posts, threads, and account settings.`,
         keywords: `zcraft profile, ${userProfile.username}, player profile`,
         url: `https://z-craft.xyz/profile`,
@@ -249,3 +249,4 @@ export default function ProfilePage() {
     </Layout>
   );
 }
+

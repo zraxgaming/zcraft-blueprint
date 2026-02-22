@@ -101,15 +101,15 @@ export default function AdminPage() {
       const forums = await pingUrl('https://z-craft.xyz/forums');
 
       setServiceStatus([
-        { name: 'Minecraft Server', status: server.online ? 'online' : 'offline', players: server.players ? `${server.players.online}/${server.players.max}` : '—' },
+        { name: 'Minecraft Server', status: server.online ? 'online' : 'offline', players: server.players ? `${server.players.online}/${server.players.max}` : '-' },
         { name: 'Website', status: website.ok ? 'online' : 'offline', uptime: website.ok ? 'Available' : 'Unavailable', latency: website.latency },
         { name: 'Forums', status: forums.ok ? 'online' : 'offline', uptime: forums.ok ? 'Available' : 'Unavailable', latency: forums.latency },
       ]);
     } catch (err) {
       setServiceStatus([
-        { name: 'Minecraft Server', status: 'unknown', players: '—' },
-        { name: 'Website', status: 'unknown', uptime: '—' },
-        { name: 'Forums', status: 'unknown', uptime: '—' },
+        { name: 'Minecraft Server', status: 'unknown', players: '-' },
+        { name: 'Website', status: 'unknown', uptime: '-' },
+        { name: 'Forums', status: 'unknown', uptime: '-' },
       ]);
     } finally {
       setStatusLoading(false);
@@ -255,7 +255,7 @@ export default function AdminPage() {
                           <span className="font-medium">{service.name}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          {service.players ?? service.uptime ?? service.note ?? '—'} {service.latency ? `• ${service.latency}ms` : ''}
+                          {service.players ?? service.uptime ?? service.note ?? '-'} {service.latency ? `• ${service.latency}ms` : ''}
                         </span>
                       </div>
                     ))

@@ -55,9 +55,9 @@ export default function ServerLiveCard({ host }: { host: string }) {
                 <div className="font-medium">{data.online ? 'Online' : 'Offline'}</div>
               </div>
 
-              <div className="text-sm text-muted-foreground">Players: {data.players?.online ?? '—'}{data.players ? ` / ${data.players.max}` : ''}</div>
+              <div className="text-sm text-muted-foreground">Players: {data.players?.online ?? '-'}{data.players ? ` / ${data.players.max}` : ''}</div>
               {data.version && <div className="text-sm text-muted-foreground">Version: {data.version}</div>}
-              <div className="text-sm text-muted-foreground">Latency: {data.latency ?? '—'} ms</div>
+              <div className="text-sm text-muted-foreground">Latency: {data.latency ?? '-'} ms</div>
             </div>
           )}
         </CardContent>
@@ -72,3 +72,4 @@ export default function ServerLiveCard({ host }: { host: string }) {
     </motion.div>
   );
 }
+

@@ -33,7 +33,7 @@ export default function ServerListings() {
   return (
     <Layout
       seo={{
-        title: "ZCraft Server Listings — Find ZCraft on Top Minecraft Lists",
+        title: "ZCraft Server Listings - Find ZCraft on Top Minecraft Lists",
         description: "Find ZCraft Network on popular Minecraft server listing sites and compare stats, players, and reviews.",
         keywords: "zcraft server listings, minecraft server listings, zcraft network listings",
         url: "https://z-craft.xyz/server-listings",
@@ -101,3 +101,4 @@ export default function ServerListings() {
     </Layout>
   );
 }
+

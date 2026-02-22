@@ -17,7 +17,7 @@ import SupportPage from "./pages/SupportPage";
 import StatusPage from "./pages/StatusPage";
 import StorePage from "./pages/StorePage";
 import StaffPage from "./pages/StaffPage";
-import EventsPage from "./pages/ChangelogsPage";
+import EventsPage from "./pages/EventsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ServerListings from "./pages/ServerListings";
@@ -37,6 +37,8 @@ import MaintenancePage from "./pages/MaintenancePage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import DiscordRedirectPage from "./pages/DiscordRedirectPage";
 import NotFound from "./pages/NotFound";
+import ChangelogsPage from "./pages/ChangelogsPage";
+import ChangelogDetailPage from "./pages/ChangelogDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -71,33 +73,35 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/play" element={<PlayPage />} />
                 <Route path="/server-listings" element={<ServerListings />} />
-            <Route path="/forums" element={<ForumsPage />} />
-            <Route path="/forums/:slug" element={<ForumThreadPage />} />
-            <Route path="/news" element={<NewsPage />} />
-            <Route path="/news/:slug" element={<NewsArticlePage />} />
-            <Route path="/rules" element={<RulesPage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/status" element={<StatusPage />} />
-            <Route path="/store" element={<StorePage />} />
-            <Route path="/staff" element={<StaffPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/discord" element={<DiscordRedirectPage />} />
-            <Route path="/admin" element={<AdminPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/news" element={<AdminNewsPage />} />
-            <Route path="/admin/forums" element={<AdminForumsPage />} />
-            <Route path="/admin/wiki" element={<AdminWikiPage />} />
-            <Route path="/admin/changelogs" element={<AdminChangelogsPage />} />
-            <Route path="/admin/settings" element={<AdminSettingsPage />} />
-            <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/forums" element={<ForumsPage />} />
+                <Route path="/forums/:slug" element={<ForumThreadPage />} />
+                <Route path="/news" element={<NewsPage />} />
+                <Route path="/news/:slug" element={<NewsArticlePage />} />
+                <Route path="/changelogs" element={<ChangelogsPage />} />
+                <Route path="/changelogs/:version" element={<ChangelogDetailPage />} />
+                <Route path="/rules" element={<RulesPage />} />
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/status" element={<StatusPage />} />
+                <Route path="/store" element={<StorePage />} />
+                <Route path="/staff" element={<StaffPage />} />
+                <Route path="/events" element={<EventsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/discord" element={<DiscordRedirectPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/news" element={<AdminNewsPage />} />
+                <Route path="/admin/forums" element={<AdminForumsPage />} />
+                <Route path="/admin/wiki" element={<AdminWikiPage />} />
+                <Route path="/admin/changelogs" element={<AdminChangelogsPage />} />
+                <Route path="/admin/settings" element={<AdminSettingsPage />} />
+                <Route path="/maintenance" element={<MaintenancePage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </MaintenanceGate>

@@ -12,7 +12,7 @@ export default function StorePage() {
   return (
     <Layout
       seo={{
-        title: "ZCraft Store — Support the Server & Get Perks",
+        title: "ZCraft Store - Support the Server & Get Perks",
         description: "Support ZCraft Network via our official store and unlock exclusive perks, cosmetics, and ranks.",
         keywords: "zcraft store, zcraft tebex, minecraft store, server store",
         url: "https://z-craft.xyz/store",
@@ -27,3 +27,4 @@ export default function StorePage() {
     </Layout>
   );
 }
+

@@ -8,6 +8,9 @@ import { useAuth } from "@/contexts/AuthContext";
 const navLinks = [
   { name: "Home", path: "/" },
   { name: "Play", path: "/play" },
+  { name: "News", path: "/news" },
+  { name: "Changelogs", path: "/changelogs" },
+  { name: "Events", path: "/events" },
   { name: "Forums", path: "/forums" },
   { name: "Server Listings", path: "/server-listings" },
   { name: "Appeal", path: "https://appeal.z-craft.xyz", external: true },
@@ -53,18 +56,27 @@ export function Navbar() {
 
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-0.5">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={cn(
-                    "nav-link",
-                    location.pathname === link.path && "active"
-                  )}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nav-link"
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={cn("nav-link", location.pathname === link.path && "active")}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
             </div>
 
             {/* Right Actions */}
@@ -150,21 +162,34 @@ export function Navbar() {
         {isOpen && (
           <div className="lg:hidden border-t bg-card animate-fade-in">
             <div className="container mx-auto px-4 py-4 space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-3 rounded-lg transition-colors",
-                    location.pathname === link.path
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg transition-colors hover:bg-muted"
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-3 rounded-lg transition-colors",
+                      location.pathname === link.path
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted"
+                    )}
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
               <div className="pt-4 border-t flex gap-2">
                 {user && userProfile ? (
                   <>

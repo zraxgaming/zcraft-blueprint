@@ -20,7 +20,7 @@ const footerLinks = {
   Community: [
     { name: "Forums", path: "/forums" },
     { name: "News", path: "/news" },
-    { name: "Changelogs", path: "/events" },
+    { name: "Changelogs", path: "/changelogs" },
     { name: "Staff", path: "/staff" },
   ],
   Resources: [

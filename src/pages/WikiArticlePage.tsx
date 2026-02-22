@@ -57,13 +57,13 @@ export default function WikiArticlePage() {
 
   // Derive a short description from the content (first paragraph) for SEO
   const descriptionMatch = article.content.match(/<p>(.*?)<\//i);
-  const shortDescription = descriptionMatch ? descriptionMatch[1].replace(/<[^>]*>/g, '').slice(0, 160) : `${article.title} — ${article.category}`;
+  const shortDescription = descriptionMatch ? descriptionMatch[1].replace(/<[^>]*>/g, '').slice(0, 160) : `${article.title} - ${article.category}`;
   const publishedTime = new Date(article.updated).toISOString();
 
   return (
     <Layout
       seo={{
-        title: `${article.title} — ZCraft Wiki`,
+        title: `${article.title} - ZCraft Wiki`,
         description: shortDescription,
         keywords: `zcraft wiki, ${article.category?.toLowerCase() || 'wiki'}, ${article.title.split(' ')[0]}`,
         url: `https://z-craft.xyz/wiki/${slug || 'getting-started'}`,
@@ -135,3 +135,4 @@ export default function WikiArticlePage() {
     </Layout>
   );
 }
+

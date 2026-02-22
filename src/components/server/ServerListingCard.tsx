@@ -36,7 +36,7 @@ export function ServerListingCard({ name, url, host }: { name: string; url: stri
     if (!host) return onCopy();
     try {
       await copyToClipboard(host);
-      toast({ title: 'Ready to join', description: `Server address ${host} copied — paste into Minecraft to join.` });
+      toast({ title: 'Ready to join', description: `Server address ${host} copied - paste into Minecraft to join.` });
     } catch {
       toast({ title: 'Copy failed', description: 'Unable to copy address', variant: 'destructive' });
     }
@@ -64,8 +64,8 @@ export function ServerListingCard({ name, url, host }: { name: string; url: stri
                   </div>
                 ) : data ? (
                   <>
-                    <div className="text-sm text-muted-foreground">Players: {data.players?.online ?? '—'}{data.players ? ` / ${data.players.max}` : ''}</div>
-                    <div className="text-sm text-muted-foreground">Latency: {data.latency ?? '—'} ms</div>
+                    <div className="text-sm text-muted-foreground">Players: {data.players?.online ?? '-'}{data.players ? ` / ${data.players.max}` : ''}</div>
+                    <div className="text-sm text-muted-foreground">Latency: {data.latency ?? '-'} ms</div>
                   </>
                 ) : (
                   <div className="text-sm text-destructive">Status unavailable</div>
@@ -101,3 +101,4 @@ export function ServerListingCard({ name, url, host }: { name: string; url: stri
     </motion.div>
   );
 }
+

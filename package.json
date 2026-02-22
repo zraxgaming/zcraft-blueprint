@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-sitemap.js",
+    "prebuild": "node scripts/generate-sitemap.js && node scripts/generate-feeds.js",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "generate:sitemap": "node scripts/generate-sitemap.js",
+    "generate:feeds": "node scripts/generate-feeds.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

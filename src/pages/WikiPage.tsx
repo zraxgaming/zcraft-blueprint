@@ -60,7 +60,7 @@ export default function WikiPage() {
     return (
       <Layout
         seo={{
-          title: "ZCraft Wiki — Server Guides & How-Tos",
+          title: "ZCraft Wiki - Server Guides & How-Tos",
           description:
             "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
           keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",
@@ -78,7 +78,7 @@ export default function WikiPage() {
     return (
       <Layout
         seo={{
-          title: "ZCraft Wiki — Server Guides & How-Tos",
+          title: "ZCraft Wiki - Server Guides & How-Tos",
           description:
             "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
           keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",
@@ -93,7 +93,7 @@ export default function WikiPage() {
   return (
     <Layout
       seo={{
-        title: "ZCraft Wiki — Server Guides & How-Tos",
+        title: "ZCraft Wiki - Server Guides & How-Tos",
         description:
           "Comprehensive guides for ZCraft Network including commands, economy, claims, and lifesteal mechanics.",
         keywords: "zcraft wiki, minecraft wiki, lifesteal guide, zcraft guides",

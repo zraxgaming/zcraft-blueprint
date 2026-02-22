@@ -1,16 +1,8 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
 
 Sitemap: https://z-craft.xyz/sitemap.xml
+Sitemap: https://z-craft.xyz/rss/news.xml
+Sitemap: https://z-craft.xyz/rss/changelogs.xml
+
+Host: z-craft.xyz

@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   return (
     <Layout
       seo={{
-        title: "Privacy Policy — ZCraft Network",
+        title: "Privacy Policy - ZCraft Network",
         description: "ZCraft Network privacy policy: how we collect and use data for our Minecraft servers and community services.",
         url: "https://z-craft.xyz/privacy",
       }}
@@ -93,3 +93,4 @@ export default function PrivacyPage() {
     </Layout>
   );
 }
+

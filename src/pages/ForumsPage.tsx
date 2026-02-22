@@ -59,7 +59,7 @@ export default function ForumsPage() {
     return (
       <Layout
         seo={{
-          title: "ZCraft Forums — Community Discussions & Help",
+          title: "ZCraft Forums - Community Discussions & Help",
           description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
           keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
           url: "https://z-craft.xyz/forums",
@@ -76,7 +76,7 @@ export default function ForumsPage() {
     return (
       <Layout
         seo={{
-          title: "ZCraft Forums — Community Discussions & Help",
+          title: "ZCraft Forums - Community Discussions & Help",
           description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
           keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
           url: "https://z-craft.xyz/forums",
@@ -90,7 +90,7 @@ export default function ForumsPage() {
   return (
     <Layout
       seo={{
-        title: "ZCraft Forums — Community Discussions & Help",
+        title: "ZCraft Forums - Community Discussions & Help",
         description: "Join the ZCraft community forums to ask questions, find guides, and chat with players.",
         keywords: "zcraft forums, minecraft forum, lifesteal discussion, zcraft community",
         url: "https://z-craft.xyz/forums",
