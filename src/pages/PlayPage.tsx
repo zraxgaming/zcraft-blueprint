@@ -45,11 +45,12 @@ export default function PlayPage() {
   return (
     <Layout
       seo={{
-        title: "Play ZCraft — Join the Lifesteal Minecraft Servers",
-        description:
-          "Connect to ZCraft Network (Java & Bedrock) — lifesteal gameplay, custom plugins, active events, and friendly community.",
-        keywords: "play zcraft, zcraft play, lifesteal server, minecraft lifesteal, java bedrock",
-        url: "https://z-craft.xyz/play",
+        title: "Play ZCraft Network — Minecraft Server IP & How to Join",
+        description: "Get ZCraft Network server IP and join our premier Minecraft lifesteal SMP server. Java & Bedrock compatible with custom plugins, economy system, factions, and active community events.",
+        keywords: "zcraft server ip, minecraft server ip, play zcraft, join minecraft server, lifesteal server ip, minecraft java bedrock, zcraft network ip, minecraft smp server",
+        url: "/play",
+        type: "website",
+        tags: ["minecraft server", "server ip", "java bedrock", "lifesteal", "smp"]
       }}
     >
       {/* Hero */}

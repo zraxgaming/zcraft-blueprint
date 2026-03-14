@@ -12,10 +12,12 @@ export default function StorePage() {
   return (
     <Layout
       seo={{
-        title: "ZCraft Store — Support the Server & Get Perks",
-        description: "Support ZCraft Network via our official store and unlock exclusive perks, cosmetics, and ranks.",
-        keywords: "zcraft store, zcraft tebex, minecraft store, server store",
-        url: "https://z-craft.xyz/store",
+        title: "ZCraft Network Store — Donate & Unlock Exclusive Perks",
+        description: "Support ZCraft Network through our official store. Unlock exclusive ranks, cosmetics, perks, and special items for our Minecraft lifesteal SMP server.",
+        keywords: "zcraft store, minecraft server store, donate to server, server perks, ranks, cosmetics, tebex, server donations, lifesteal store, minecraft cosmetics",
+        url: "/store",
+        type: "website",
+        tags: ["store", "donate", "perks", "ranks", "cosmetics"]
       }}
     >
       <div className="py-24 text-center">

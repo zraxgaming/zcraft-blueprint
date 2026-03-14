@@ -49,12 +49,14 @@ export default function NewsArticlePage() {
   return (
     <Layout
       seo={{
-        title: `${article.title} — ZCraft News`,
-        description: `${article.title} — ${article.tag} on ZCraft Network. Read details and event information.`,
-        keywords: `zcraft news, ${article.tag?.toLowerCase() || 'news'}, zcraft event`,
-        url: `https://z-craft.xyz/news/${slug || 'summer-event-2024'}`,
+        title: `${article.title} — ZCraft Network News & Updates`,
+        description: `${article.title} — Latest ${article.tag} from ZCraft Network. Stay updated with server announcements, events, and important Minecraft lifesteal SMP news.`,
+        keywords: `zcraft news, ${article.title}, ${article.tag?.toLowerCase() || 'news'}, minecraft server updates, lifesteal news, server announcements, zcraft ${article.tag?.toLowerCase() || 'update'}`,
+        url: `/news/${slug || 'summer-event-2024'}`,
         type: 'article',
         publishedTime,
+        section: article.tag || 'News',
+        tags: ['news', 'updates', article.tag?.toLowerCase() || 'announcement', 'minecraft']
       }}
     >
       <section className="py-12 lg:py-16">

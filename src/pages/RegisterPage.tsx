@@ -52,7 +52,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "Register for ZCraft Network — Join the Minecraft Community",
+        description: "Create your ZCraft Network account to join our premier Minecraft lifesteal SMP server. Sign up with Discord, GitHub, Google, or email.",
+        keywords: "register zcraft, join minecraft server, create account, lifesteal server registration, minecraft sign up, zcraft network account",
+        url: "/register",
+        type: "website",
+        noindex: true,
+        tags: ["register", "sign up", "account creation", "join server"]
+      }}
+    >
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <Card className="max-w-md mx-auto border-0 bg-card card-hover">

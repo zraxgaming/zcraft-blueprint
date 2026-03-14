@@ -7,12 +7,12 @@ const Index = () => {
   return (
     <Layout
       seo={{
-        title: "ZCraft Network — Play Lifesteal & Survival Minecraft Servers",
-        description:
-          "Play ZCraft Network — top Minecraft lifesteal servers with active events, custom plugins, economy, and a friendly community. Join now to experience lifesteal gameplay.",
-        keywords:
-          "ZCraft, ZCraft Network, Minecraft lifesteal, lifesteal server, minecraft server, play minecraft",
-        url: "https://z-craft.xyz/",
+        title: "ZCraft Network — #1 Minecraft Lifesteal SMP Server | Join Now",
+        description: "Join ZCraft Network, the premier Minecraft lifesteal SMP server with competitive PvP, custom economy, factions, and active community events. Best Minecraft server for lifesteal gameplay, survival, and social gaming.",
+        keywords: "zcraft network, minecraft lifesteal server, lifesteal smp, minecraft server, best minecraft server, minecraft factions, minecraft economy, minecraft pvp, minecraft survival server, minecraft community server, play minecraft lifesteal",
+        url: "/",
+        type: "website",
+        tags: ["minecraft", "lifesteal", "smp", "server", "gaming", "community"]
       }}
     >
       <HeroSection />

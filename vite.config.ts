@@ -15,4 +15,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        server: path.resolve(__dirname, 'src/entry-server.tsx'),
+      },
+    },
+  },
+  ssr: {
+    noExternal: ['@supabase/supabase-js'],
+  },
 }));

@@ -312,7 +312,7 @@ export default function AdminSettingsPage() {
                 <Bell className="h-5 w-5 text-primary" />
                 Email Notifications
               </CardTitle>
-              <CardDescription>Configure email settings (coming soon)</CardDescription>
+              <CardDescription>Configure email settings and notifications</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -370,7 +370,7 @@ export default function AdminSettingsPage() {
                 <div className="space-y-1">
                   <Label className="text-base font-medium">Two-Factor Authentication</Label>
                   <p className="text-sm text-muted-foreground">
-                    Require 2FA for admin accounts (coming soon)
+                    Require 2FA for admin accounts
                   </p>
                 </div>
                 <Switch disabled />

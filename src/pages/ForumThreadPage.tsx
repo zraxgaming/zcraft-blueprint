@@ -405,12 +405,14 @@ export default function ForumThreadPage() {
 
   return (
     <Layout seo={{
-      title: `${post.title} - ZCraft Network Forums`,
-      description: post.content.substring(0, 160),
-      keywords: `forum, discussion, zcraft network, ${slug}`,
-      url: `https://z-craft.xyz/forums/${slug}/${post.id}`,
+      title: `${post.title} — ZCraft Network Forums Discussion`,
+      description: `${post.content.substring(0, 160)}... Join the discussion on ZCraft Network forums about Minecraft lifesteal SMP gameplay, server updates, and community topics.`,
+      keywords: `zcraft forums, ${post.title}, minecraft discussion, lifesteal forums, server discussion, community forum, ${slug}, forum thread`,
+      url: `/forums/${slug}/${post.id}`,
       type: "article",
       publishedTime: post.created_at,
+      section: "Forums",
+      tags: ["forums", "discussion", "minecraft", "community", "lifesteal"]
     }}>
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4">

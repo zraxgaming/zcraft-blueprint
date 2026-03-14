@@ -68,7 +68,16 @@ const ruleCategories = [
 
 export default function RulesPage() {
   return (
-    <Layout>
+    <Layout
+      seo={{
+        title: "ZCraft Network Server Rules — Minecraft Community Guidelines",
+        description: "Complete server rules for ZCraft Network Minecraft server. Learn about gameplay rules, chat guidelines, forum policies, and Discord rules for our lifesteal SMP community.",
+        keywords: "zcraft rules, minecraft server rules, lifesteal rules, minecraft smp rules, server guidelines, minecraft community rules, zcraft network rules",
+        url: "/rules",
+        type: "article",
+        tags: ["minecraft rules", "server rules", "lifesteal rules", "gaming community", "minecraft smp"]
+      }}
+    >
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />

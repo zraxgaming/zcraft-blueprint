@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Settings, MessageSquare, FileText, Bell, User, Shield, Loader } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { ProfilePicture } from "@/components/ui/ProfilePicture";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -50,10 +51,13 @@ export default function ProfilePage() {
     return (
       <Layout
         seo={{
-          title: "Profile — ZCraft Network",
-          description: "View and manage your ZCraft profile, posts, and settings.",
-          keywords: "zcraft profile, player profile, minecraft account",
-          url: "https://z-craft.xyz/profile",
+          title: "ZCraft Network Profile — Manage Your Minecraft Account",
+          description: "View and manage your ZCraft Network profile, forum posts, account settings, and Minecraft lifesteal SMP server statistics.",
+          keywords: "zcraft profile, minecraft profile, player profile, account settings, forum posts, lifesteal profile, server statistics",
+          url: "/profile",
+          type: "profile",
+          noindex: false,
+          tags: ["profile", "account", "settings", "forum posts"]
         }}
       >
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -67,10 +71,13 @@ export default function ProfilePage() {
     return (
       <Layout
         seo={{
-          title: "Profile — ZCraft Network",
-          description: "View and manage your ZCraft profile, posts, and settings.",
-          keywords: "zcraft profile, player profile, minecraft account",
-          url: "https://z-craft.xyz/profile",
+          title: "ZCraft Network Profile — Manage Your Minecraft Account",
+          description: "View and manage your ZCraft Network profile, forum posts, account settings, and Minecraft lifesteal SMP server statistics.",
+          keywords: "zcraft profile, minecraft profile, player profile, account settings, forum posts, lifesteal profile, server statistics",
+          url: "/profile",
+          type: "profile",
+          noindex: false,
+          tags: ["profile", "account", "settings", "forum posts"]
         }}
       >
         <div className="container mx-auto px-4 py-12 text-center">
@@ -88,10 +95,12 @@ export default function ProfilePage() {
   return (
     <Layout
       seo={{
-        title: `Profile — ${userProfile.username} | ZCraft Network`,
-        description: `${userProfile.username}'s profile on ZCraft Network. View posts, threads, and account settings.`,
-        keywords: `zcraft profile, ${userProfile.username}, player profile`,
-        url: `https://z-craft.xyz/profile`,
+        title: `${userProfile.username}'s Profile — ZCraft Network Minecraft Player`,
+        description: `View ${userProfile.username}'s profile on ZCraft Network. Check out forum posts, join date, and activity on our premier Minecraft lifesteal SMP server.`,
+        keywords: `zcraft profile, ${userProfile.username} profile, minecraft player profile, lifesteal player, server member, forum posts, ${userProfile.username}`,
+        url: "/profile",
+        type: "profile",
+        tags: ["profile", "player", "forum posts", "minecraft"]
       }}
     >
       <section className="py-12 lg:py-16">
@@ -101,17 +110,13 @@ export default function ProfilePage() {
             <Card className="border-0 bg-card mb-8">
               <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  {userProfile.avatar_url ? (
-                    <img
-                      src={userProfile.avatar_url}
-                      alt={userProfile.username}
-                      className="h-24 w-24 rounded-2xl object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary/10 text-5xl">
-                      👤
-                    </div>
-                  )}
+                  <ProfilePicture
+                    userId={user.id}
+                    username={userProfile.username}
+                    currentAvatarUrl={userProfile.avatar_url}
+                    size="large"
+                    className="h-24 w-24 rounded-2xl"
+                  />
                   <div className="text-center md:text-left flex-1">
                     <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                       <h1 className="font-display text-2xl font-bold">{userProfile.username}</h1>
@@ -221,6 +226,24 @@ export default function ProfilePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <ProfilePicture
+                          userId={user.id}
+                          username={userProfile.username}
+                          currentAvatarUrl={userProfile.avatar_url}
+                          size="medium"
+                          className="h-16 w-16 rounded-xl"
+                          editable={true}
+                        />
+                        <div>
+                          <h3 className="font-medium">Profile Picture</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Upload a custom avatar or use your OAuth provider's image
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     <div className="grid gap-4">
                       <div className="space-y-2">
                         <Label>Email</Label>

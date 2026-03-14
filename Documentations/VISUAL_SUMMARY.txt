@@ -163,11 +163,11 @@
 │  ├─ Code exchange with Discord                 ⏳ NEEDS IMPL        │
 │  └─ User creation & session                    ⏳ NEEDS IMPL        │
 │                                                                         │
-│  Admin Features                                 ░░░░░░░░░░░░ 0%     │
-│  ├─ AdminSettingsPage                          ⏳ NEEDS CREATION    │
+│  Admin Features                                 ░░░░░░░░░░░░ 24%     │
+│  ├─ AdminSettingsPage                          ⏳ HALF COMPLETE    │
 │  ├─ Discord link form                          ⏳ NEEDS CREATION    │
 │  └─ Admin-only access control                  ⏳ NEEDS IMPL        │
-│                                                                         │
+│                                                                          │
 │  Testing & Deployment                          ░░░░░░░░░░░░ 0%     │
 │  ├─ End-to-end testing                         ⏳ PENDING           │
 │  ├─ Production deployment                      ⏳ PENDING           │

@@ -116,11 +116,12 @@ export default function StaffPage() {
 
   return (
     <Layout seo={{
-      title: "Staff - ZCraft Network",
-      description: "Meet the ZCraft Network staff team. Admins, moderators, and helpers dedicated to the community.",
-      keywords: "staff, team, admin, moderator, zcraft network",
-      url: "https://z-craft.xyz/staff",
+      title: "ZCraft Network Staff Team — Meet Our Admins & Moderators",
+      description: "Meet the dedicated ZCraft Network staff team including admins, moderators, and helpers. Learn about our community management and server administration team.",
+      keywords: "zcraft staff, minecraft server staff, server admins, moderators, server team, zcraft network team, minecraft administrators, server management",
+      url: "/staff",
       type: "website",
+      tags: ["staff", "team", "admins", "moderators", "community"]
     }}>
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">

@@ -6,9 +6,12 @@ export default function TermsPage() {
   return (
     <Layout
       seo={{
-        title: "Terms of Service — ZCraft Network",
-        description: "Terms of Service for ZCraft Network. Rules for using our Minecraft servers, forums, and services.",
-        url: "https://z-craft.xyz/terms",
+        title: "ZCraft Network Terms of Service — Server Usage Agreement",
+        description: "ZCraft Network Terms of Service: Complete terms and conditions for using our Minecraft lifesteal SMP server, forums, Discord, and all community services.",
+        keywords: "zcraft terms of service, minecraft server terms, terms and conditions, server agreement, user agreement, service terms, minecraft tos",
+        url: "/terms",
+        type: "website",
+        tags: ["terms of service", "user agreement", "server rules", "legal"]
       }}
     >
       <section className="py-16 lg:py-24">

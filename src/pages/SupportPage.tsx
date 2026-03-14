@@ -57,11 +57,12 @@ const faqs = [
 export default function SupportPage() {
   return (
     <Layout seo={{
-      title: "Support - ZCraft Network",
-      description: "Get help and support for ZCraft Network. FAQ, guides, troubleshooting, and community support.",
-      keywords: "support, help, faq, zcraft network",
-      url: "https://z-craft.xyz/support",
+      title: "ZCraft Network Support — Help Center & Community Assistance",
+      description: "Get help and support for ZCraft Network Minecraft server. FAQ, troubleshooting guides, ban appeals, ticket system, and community support for lifesteal SMP gameplay.",
+      keywords: "zcraft support, minecraft server support, lifesteal support, server help, ban appeal, ticket system, minecraft troubleshooting, server faq, zcraft help",
+      url: "/support",
       type: "website",
+      tags: ["support", "help", "faq", "troubleshooting", "ban appeal"]
     }}>
       {/* Hero */}
       <section className="py-16 lg:py-24 relative overflow-hidden">

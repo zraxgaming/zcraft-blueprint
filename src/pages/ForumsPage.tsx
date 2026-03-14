@@ -116,11 +116,13 @@ export default function ForumsPage() {
 
   if (loading) {
     return (
-      <Layout seo={{ 
-        title: "Forums - ZCraft Network", 
-        description: "Join ZCraft Network forums to discuss, share ideas, get support, and connect with the community.",
-        keywords: "forums, discussion, community, zcraft network",
+      <Layout seo={{
+        title: "ZCraft Network Forums — Minecraft Community Discussions",
+        description: "Join ZCraft Network forums for Minecraft discussions, lifesteal gameplay tips, server announcements, player support, and community conversations.",
+        keywords: "zcraft forums, minecraft forums, lifesteal forums, minecraft community, server discussions, player support, minecraft discussions, gaming forums",
+        url: "/forums",
         type: "website",
+        tags: ["forums", "community", "discussions", "minecraft", "support"]
       }}>
         <div className="flex justify-center py-20">
           <Loader className="animate-spin h-8 w-8 text-primary" />
@@ -130,12 +132,13 @@ export default function ForumsPage() {
   }
 
   return (
-    <Layout seo={{ 
-      title: "Forums - ZCraft Network", 
-      description: "Join ZCraft Network forums to discuss, share ideas, get support, and connect with the community.",
-      keywords: "forums, discussion, community, zcraft network",
-      url: "https://z-craft.xyz/forums",
+    <Layout seo={{
+      title: "ZCraft Network Forums — Minecraft Community Discussions",
+      description: "Join ZCraft Network forums for Minecraft discussions, lifesteal gameplay tips, server announcements, player support, and community conversations. Connect with thousands of players.",
+      keywords: "zcraft forums, minecraft forums, lifesteal forums, minecraft community, server discussions, player support, minecraft discussions, gaming forums",
+      url: "/forums",
       type: "website",
+      tags: ["forums", "community", "discussions", "minecraft", "support"]
     }}>
       {/* Hero */}
       <section className="py-16 bg-gradient-to-b from-primary/10 to-transparent">

@@ -125,11 +125,12 @@ export default function ForumCategoryPage() {
 
   return (
     <Layout seo={{
-      title: `${forum.title} - ZCraft Network Forums`,
-      description: forum.description || "ZCraft Network community forum",
-      keywords: `forum, ${forum.category}, zcraft network, discussion`,
-      url: `https://z-craft.xyz/forums/${forum.slug}`,
+      title: `${forum.title} — ZCraft Network Forums Category`,
+      description: `${forum.description || 'ZCraft Network community forum category'}. Join discussions about Minecraft lifesteal SMP, server updates, and community topics in this forum section.`,
+      keywords: `zcraft forums, ${forum.title}, minecraft forum category, lifesteal discussions, server community, ${forum.category}, forum section`,
+      url: `/forums/${forum.slug}`,
       type: "website",
+      tags: ["forums", "category", "discussion", "minecraft", forum.category.toLowerCase()]
     }}>
       <section className="py-12">
         <div className="container mx-auto px-4">

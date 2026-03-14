@@ -3,6 +3,15 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { sendWebhook, WebhookEvent } from '@/services/webhookService';
 import { uploadProfilePicture } from '@/services/storageService';
+import {
+  sanitizeInput,
+  isValidEmail,
+  isValidUsername,
+  isValidPassword,
+  validateFileUpload,
+  checkRateLimit,
+  logSecurityEvent
+} from '@/lib/security';
 
 export type AppRole = 'admin' | 'moderator' | 'user';
 
@@ -54,6 +63,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
         return;
+      }
+
+      // If no avatar_url but we have OAuth metadata, try to get it
+      let avatarUrl = profileData.avatar_url;
+      if (!avatarUrl && user) {
+        const metadata = user.user_metadata;
+        if (metadata) {
+          // GitHub avatar
+          if (metadata.avatar_url) {
+            avatarUrl = metadata.avatar_url;
+          }
+          // Google avatar
+          else if (metadata.picture) {
+            avatarUrl = metadata.picture;
+          }
+          // Discord avatar (would be handled by backend)
+        }
+      }
+
+      // Update profile with OAuth avatar if we found one
+      if (avatarUrl && avatarUrl !== profileData.avatar_url) {
+        await supabase
+          .from('users')
+          .update({ avatar_url: avatarUrl })
+          .eq('id', userId);
+        profileData.avatar_url = avatarUrl;
       }
 
       // Fetch user role using secure RPC function
@@ -109,12 +144,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    // Rate limiting
+    const rateLimitKey = `login:${email.toLowerCase()}`;
+    if (!checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000)) { // 5 attempts per 15 minutes
+      logSecurityEvent('RATE_LIMIT_EXCEEDED', { action: 'login', identifier: email });
+      throw new Error('Too many login attempts. Please try again later.');
+    }
+
+    // Input validation
+    const sanitizedEmail = sanitizeInput(email, 254);
+    if (!isValidEmail(sanitizedEmail)) {
+      throw new Error('Please enter a valid email address.');
+    }
+
     const { error, data } = await supabase.auth.signInWithPassword({
-      email,
+      email: sanitizedEmail,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      logSecurityEvent('LOGIN_FAILED', { email: sanitizedEmail, error: error.message });
+      throw error;
+    }
 
     // Send webhook for user login
     if (data.user) {
@@ -127,27 +178,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (email: string, password: string, username: string) => {
+    // Rate limiting
+    const rateLimitKey = `register:${email.toLowerCase()}`;
+    if (!checkRateLimit(rateLimitKey, 3, 60 * 60 * 1000)) { // 3 attempts per hour
+      logSecurityEvent('RATE_LIMIT_EXCEEDED', { action: 'register', email });
+      throw new Error('Too many registration attempts. Please try again later.');
+    }
+
+    // Input validation
+    const sanitizedEmail = sanitizeInput(email, 254);
+    const sanitizedUsername = sanitizeInput(username, 30);
+
+    if (!isValidEmail(sanitizedEmail)) {
+      throw new Error('Please enter a valid email address.');
+    }
+
+    if (!isValidUsername(sanitizedUsername)) {
+      throw new Error('Username must be 3-30 characters and contain only letters, numbers, underscores, and hyphens.');
+    }
+
+    if (!isValidPassword(password)) {
+      throw new Error('Password must be at least 8 characters with at least one uppercase letter, one lowercase letter, and one number.');
+    }
+
     const redirectUrl = `${window.location.origin}/auth/callback`;
-    
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
+      email: sanitizedEmail,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          username,
+          username: sanitizedUsername,
         },
       },
     });
 
-    if (authError) throw authError;
+    if (authError) {
+      logSecurityEvent('REGISTRATION_FAILED', { email: sanitizedEmail, username: sanitizedUsername, error: authError.message });
+      throw authError;
+    }
+
     if (!authData.user) throw new Error('Failed to create user');
 
     // Send webhook for user registration
     await sendWebhook(WebhookEvent.USER_REGISTERED, {
       userId: authData.user.id,
       email: authData.user.email,
-      username,
+      username: sanitizedUsername,
       createdAt: authData.user.created_at,
     });
   };
@@ -175,35 +253,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) throw new Error('No user logged in');
 
+    // Sanitize input data
+    const sanitizedUpdates: any = {};
+    if (updates.username) {
+      sanitizedUpdates.username = updates.username.trim().replace(/[<>\"'&]/g, '');
+    }
+    if (updates.bio) {
+      sanitizedUpdates.bio = updates.bio.trim().substring(0, 500).replace(/[<>\"'&]/g, '');
+    }
+    if (updates.avatar_url) {
+      // Validate URL format
+      try {
+        new URL(updates.avatar_url);
+        sanitizedUpdates.avatar_url = updates.avatar_url;
+      } catch {
+        throw new Error('Invalid avatar URL format');
+      }
+    }
+
     const { error } = await supabase
       .from('users')
       .update({
-        username: updates.username,
-        bio: updates.bio,
-        avatar_url: updates.avatar_url,
+        ...sanitizedUpdates,
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id);
 
     if (error) throw error;
 
-    setUserProfile((prev) => prev ? { ...prev, ...updates } : null);
+    setUserProfile((prev) => prev ? { ...prev, ...sanitizedUpdates } : null);
 
     // Send webhook for profile update
     await sendWebhook(WebhookEvent.USER_PROFILE_UPDATED, {
       userId: user.id,
       email: user.email,
-      updatedFields: Object.keys(updates),
-      updates,
+      updatedFields: Object.keys(sanitizedUpdates),
+      updates: sanitizedUpdates,
     });
   };
 
   const updateProfilePicture = async (file: File): Promise<string> => {
     if (!user) throw new Error('No user logged in');
 
+    // Validate file upload
+    const validation = validateFileUpload(file, {
+      maxSize: 2 * 1024 * 1024, // 2MB
+      allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+    });
+
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
     // Upload image to storage
     const result = await uploadProfilePicture(file, user.id);
     if (result.error) {
+      logSecurityEvent('FILE_UPLOAD_FAILED', { userId: user.id, error: result.error });
       throw new Error(result.error);
     }
 
@@ -214,13 +320,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithDiscord = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) throw error;
+    const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID;
+    if (!clientId) {
+      throw new Error('Discord client ID not configured');
+    }
+
+    const redirectUri = `${window.location.origin}/auth/discord/callback`;
+    const scope = 'identify email';
+    const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}`;
+
+    window.location.href = discordAuthUrl;
   };
 
   const signInWithGithub = async () => {

@@ -58,11 +58,13 @@ export default function LoginPage() {
   };
   return (
     <Layout seo={{
-      title: "Login - ZCraft Network",
-      description: "Login to your ZCraft Network account to access forums, profiles, and more.",
-      keywords: "login, account, zcraft network",
-      url: "https://z-craft.xyz/login",
+      title: "Login to ZCraft Network — Access Your Minecraft Account",
+      description: "Sign in to your ZCraft Network account to access forums, profile management, and exclusive Minecraft lifesteal SMP server features.",
+      keywords: "login zcraft, minecraft login, account login, zcraft network login, server account, lifesteal login",
+      url: "/login",
       type: "website",
+      noindex: true,
+      tags: ["login", "account", "authentication"]
     }}>
       <section className="py-16 lg:py-24 min-h-[70vh] flex items-center">
         <div className="container mx-auto px-4">

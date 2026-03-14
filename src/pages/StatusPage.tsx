@@ -12,9 +12,12 @@ export default function StatusPage() {
   return (
     <Layout
       seo={{
-        title: "Status — ZCraft Network",
-        description: "Live status and incident reports for ZCraft Network services.",
-        url: "https://z-craft.xyz/status",
+        title: "ZCraft Network Server Status — Live Uptime & Incident Reports",
+        description: "Check ZCraft Network server status, uptime monitoring, incident reports, and maintenance schedules for our Minecraft lifesteal SMP server.",
+        keywords: "zcraft server status, minecraft server status, server uptime, incident reports, server maintenance, lifesteal server status, minecraft downtime",
+        url: "/status",
+        type: "website",
+        tags: ["server status", "uptime", "incidents", "maintenance"]
       }}
     >
       <div className="py-24 text-center">

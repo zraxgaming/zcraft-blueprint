@@ -54,11 +54,12 @@ export default function ChangelogsPage() {
   if (loading) {
     return (
       <Layout seo={{
-        title: "Changelogs - ZCraft Network",
-        description: "View all ZCraft Network updates, patches, and changelogs.",
-        keywords: "changelogs, updates, patches, zcraft network",
-        url: "https://z-craft.xyz/events",
+        title: "ZCraft Network Changelogs — Server Updates & Release Notes",
+        description: "Stay updated with ZCraft Network's latest changelogs, server updates, new features, bug fixes, and improvements. Read detailed release notes for our Minecraft lifesteal SMP server.",
+        keywords: "zcraft changelogs, minecraft server updates, lifesteal server updates, release notes, server patches, minecraft updates, zcraft network changelogs",
+        url: "/events",
         type: "website",
+        tags: ["changelogs", "updates", "release notes", "server updates"]
       }}>
         <div className="flex items-center justify-center py-20">
           <Loader className="h-8 w-8 animate-spin text-primary" />
@@ -70,11 +71,12 @@ export default function ChangelogsPage() {
   if (error) {
     return (
       <Layout seo={{
-        title: "Changelogs - ZCraft Network",
-        description: "View all ZCraft Network updates, patches, and changelogs.",
-        keywords: "changelogs, updates, patches, zcraft network",
-        url: "https://z-craft.xyz/events",
+        title: "ZCraft Network Changelogs — Server Updates & Release Notes",
+        description: "Stay updated with ZCraft Network's latest changelogs, server updates, new features, bug fixes, and improvements.",
+        keywords: "zcraft changelogs, minecraft server updates, lifesteal server updates, release notes, server patches",
+        url: "/events",
         type: "website",
+        tags: ["changelogs", "updates", "release notes"]
       }}>
         <div className="py-20 text-center text-red-500">{error}</div>
       </Layout>
@@ -84,11 +86,12 @@ export default function ChangelogsPage() {
   return (
     <Layout
       seo={{
-        title: 'Changelogs — ZCraft',
-        description: 'Read the latest release notes and changelogs for ZCraft server updates, features, and fixes.',
-        keywords: 'zcraft changelogs, release notes, zcraft updates',
-        url: 'https://z-craft.xyz/changelogs',
+        title: 'ZCraft Network Changelogs — Server Updates & Release Notes',
+        description: 'Stay updated with ZCraft Network changelogs, server updates, new features, bug fixes, and improvements. Read detailed release notes for our Minecraft lifesteal SMP server.',
+        keywords: 'zcraft changelogs, minecraft server updates, lifesteal server updates, release notes, server patches, minecraft updates, zcraft network changelogs, server changelog',
+        url: '/events',
         type: 'website',
+        tags: ['changelogs', 'updates', 'release notes', 'server updates']
       }}
     >
       {/* Hero */}

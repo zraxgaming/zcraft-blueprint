@@ -9,11 +9,13 @@ import { ArrowLeft } from "lucide-react";
 export default function ForgotPasswordPage() {
   return (
     <Layout seo={{
-      title: "Forgot Password - ZCraft Network",
-      description: "Reset your ZCraft Network account password.",
-      keywords: "password reset, forgot password, zcraft network",
-      url: "https://z-craft.xyz/forgot-password",
+      title: "Reset Password — ZCraft Network Account Recovery",
+      description: "Forgot your password? Reset your ZCraft Network account password to regain access to our Minecraft lifesteal SMP server and community features.",
+      keywords: "reset password, forgot password, account recovery, password reset, zcraft login help, minecraft account recovery",
+      url: "/forgot-password",
       type: "website",
+      noindex: true,
+      tags: ["password reset", "account recovery", "login help"]
     }}>
       <section className="py-16 lg:py-24 min-h-[70vh] flex items-center">
         <div className="container mx-auto px-4">

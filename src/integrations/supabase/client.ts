@@ -8,10 +8,42 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
+// SSR-safe: return a mock client during SSR to avoid localStorage access
+export const supabase = typeof window === 'undefined'
+  ? {
+      auth: {
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        getSession: () => Promise.resolve({ data: { session: null } }),
+        signInWithPassword: () => Promise.resolve({ error: null, data: {} }),
+        signUp: () => Promise.resolve({ error: null, data: {} }),
+        signOut: () => Promise.resolve({ error: null }),
+        signInWithOAuth: () => Promise.resolve({ error: null, data: {} }),
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: null, error: null }),
+          }),
+          order: () => ({
+            limit: () => Promise.resolve({ data: [], error: null }),
+          }),
+        }),
+        insert: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+        update: () => ({
+          eq: () => ({
+            select: () => ({
+              single: () => Promise.resolve({ data: null, error: null }),
+            }),
+          }),
+        }),
+        delete: () => ({
+          eq: () => Promise.resolve({ error: null }),
+        }),
+        rpc: () => Promise.resolve({ data: null, error: null }),
+      }),
+    }
+  : createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);

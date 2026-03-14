@@ -11,19 +11,21 @@ const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 async function main() {
   console.log('Generating sitemap...');
 
+  const buildDate = new Date().toISOString().slice(0, 10);
+
   const staticPages = [
-    { loc: '/', changefreq: 'daily', priority: '1.0' },
-    { loc: '/play', changefreq: 'weekly', priority: '0.9' },
-    { loc: '/forums', changefreq: 'weekly', priority: '0.8' },
-    { loc: '/wiki', changefreq: 'weekly', priority: '0.7' },
-    { loc: '/store', changefreq: 'weekly', priority: '0.7' },
-    { loc: '/server-listings', changefreq: 'weekly', priority: '0.6' },
-    { loc: '/news', changefreq: 'daily', priority: '0.8' },
-    { loc: '/changelogs', changefreq: 'weekly', priority: '0.6' },
-    { loc: '/events', changefreq: 'weekly', priority: '0.6' },
-    { loc: '/support', changefreq: 'monthly', priority: '0.4' },
-    { loc: '/search', changefreq: 'weekly', priority: '0.4' },
-    { loc: '/status', changefreq: 'hourly', priority: '0.9' }
+    { loc: '/', lastmod: buildDate, changefreq: 'daily', priority: '1.0' },
+    { loc: '/play', lastmod: buildDate, changefreq: 'weekly', priority: '0.9' },
+    { loc: '/forums', lastmod: buildDate, changefreq: 'weekly', priority: '0.8' },
+    { loc: '/wiki', lastmod: buildDate, changefreq: 'weekly', priority: '0.7' },
+    { loc: '/store', lastmod: buildDate, changefreq: 'weekly', priority: '0.7' },
+    { loc: '/server-listings', lastmod: buildDate, changefreq: 'weekly', priority: '0.6' },
+    { loc: '/news', lastmod: buildDate, changefreq: 'daily', priority: '0.8' },
+    { loc: '/changelogs', lastmod: buildDate, changefreq: 'weekly', priority: '0.6' },
+    { loc: '/events', lastmod: buildDate, changefreq: 'weekly', priority: '0.6' },
+    { loc: '/support', lastmod: buildDate, changefreq: 'monthly', priority: '0.4' },
+    { loc: '/search', lastmod: buildDate, changefreq: 'weekly', priority: '0.4' },
+    { loc: '/status', lastmod: buildDate, changefreq: 'hourly', priority: '0.9' }
   ];
 
   const dynamicUrls = [];
@@ -92,13 +94,19 @@ async function main() {
 
   const urls = [...staticPages, ...dynamicUrls];
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls
     .map((u) => {
       const full = `${SITE_URL}${u.loc}`;
       const lastmod = u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : '';
       const changefreq = u.changefreq ? `\n    <changefreq>${u.changefreq}</changefreq>` : '';
       const priority = u.priority ? `\n    <priority>${u.priority}</priority>` : '';
-      return `  <url>\n    <loc>${full}</loc>${lastmod}${changefreq}${priority}\n  </url>`;
+      const alternates = [
+        { hreflang: 'en', href: full },
+        { hreflang: 'x-default', href: full },
+      ]
+        .map((a) => `\n    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}" />`)
+        .join('');
+      return `  <url>\n    <loc>${full}</loc>${alternates}${lastmod}${changefreq}${priority}\n  </url>`;
     })
     .join('\n')}\n</urlset>`;
 

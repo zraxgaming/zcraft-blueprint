@@ -47,10 +47,12 @@ export default function NewsPage() {
   return (
     <Layout
       seo={{
-        title: "ZCraft News — Announcements, Updates & Events",
-        description: "Official ZCraft Network announcements, event news, and update notes. Stay informed about server changes and upcoming events.",
-        keywords: "zcraft news, minecraft server news, lifesteal events, zcraft updates",
-        url: "https://z-craft.xyz/news",
+        title: "ZCraft Network News — Latest Updates, Events & Announcements",
+        description: "Stay updated with ZCraft Network's latest news, server announcements, event schedules, and important updates. Get the latest information about our Minecraft lifesteal SMP server.",
+        keywords: "zcraft news, minecraft server news, lifesteal server updates, minecraft announcements, server events, zcraft network news, minecraft server updates, lifesteal news",
+        url: "/news",
+        type: "website",
+        tags: ["news", "updates", "announcements", "events", "minecraft"]
       }}
     >
       {/* Hero */}
