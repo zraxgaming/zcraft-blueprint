@@ -34,7 +34,7 @@ const supportOptions = [
 const faqs = [
   {
     question: "How do I join the server?",
-    answer: "Add play.zcraftmc.xyz:11339 (Java) or bedrock.zcraftmc.xyz:11339 (Bedrock) to your server list. We support both Java (1.8-1.21) and Bedrock editions.",
+    answer: "Add play.zcraftmc.xyz (Java) to your server list. We support Java (1.8-1.21).",
   },
   {
     question: "I lost my items, can I get them back?",

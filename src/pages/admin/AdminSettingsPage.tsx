@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
   const [serverName, setServerName] = useState("ZCraft Network");
   const [javaIp, setJavaIp] = useState("play.zcraftmc.xyz");
   const [bedrockIp, setBedrockIp] = useState("bedrock.zcraftmc.xyz");
-  const [serverPort, setServerPort] = useState("11339");
+  const [serverPort, setServerPort] = useState("25565");
   const [serverDescription, setServerDescription] = useState("");
   const [discordUrl, setDiscordUrl] = useState("");
   const [storeUrl, setStoreUrl] = useState("");
@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
       setServerName(settingsMap.get('server_name') || 'ZCraft Network');
       setJavaIp(settingsMap.get('java_ip') || 'play.zcraftmc.xyz');
       setBedrockIp(settingsMap.get('bedrock_ip') || 'bedrock.zcraftmc.xyz');
-      setServerPort(settingsMap.get('server_port') || '11339');
+      setServerPort(settingsMap.get('server_port') || '25565');
       setServerDescription(settingsMap.get('server_description') || '');
       setDiscordUrl(settingsMap.get('discord_link') || '');
       setStoreUrl(settingsMap.get('store_url') || '');

@@ -99,7 +99,7 @@ export function Footer() {
             © 2026 ZCraft. Not affiliated with Mojang AB.
           </p>
           <p className="text-sm text-muted-foreground font-mono">
-            play.zcraftmc.xyz:11339 | bedrock.zcraftmc.xyz:11339
+            play.zcraftmc.xyz | Version 1.21.4
           </p>
         </div>
       </div>

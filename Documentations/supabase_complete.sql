@@ -469,7 +469,7 @@ INSERT INTO admin_settings (key, value, description) VALUES
   ('server_name', 'ZCraft Network', 'Server display name'),
   ('java_ip', 'play.zcraftmc.xyz', 'Java Edition server IP'),
   ('bedrock_ip', 'bedrock.zcraftmc.xyz', 'Bedrock Edition server IP'),
-  ('server_port', '11339', 'Server port for both editions'),
+  ('server_port', '25565', 'Server port for both editions'),
   ('discord_link', 'https://discord.z-craft.xyz', 'Discord server invite link'),
   ('store_url', 'https://store.z-craft.xyz', 'Store URL'),
   ('status_page', 'https://status.z-craft.xyz', 'Server status page URL'),

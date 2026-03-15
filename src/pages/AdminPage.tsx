@@ -96,7 +96,7 @@ export default function AdminPage() {
   async function loadServiceStatus() {
     setStatusLoading(true);
     try {
-      const server = await fetchMinecraftServerStatus('play.zcraftmc.xyz:11339');
+      const server = await fetchMinecraftServerStatus('play.zcraftmc.xyz');
       const website = await pingUrl('https://z-craft.xyz');
       const forums = await pingUrl('https://z-craft.xyz/forums');
 

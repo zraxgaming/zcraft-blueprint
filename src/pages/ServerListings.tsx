@@ -9,11 +9,11 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 const EXTERNAL_LISTINGS = [
   
-  { name: "Minecraft-ServerList", url: "https://minecraft-serverlist.com/server/4150", host: "play.zcraftmc.xyz:11339" },
-  { name: "FindMCServer", url: "https://findmcserver.com/server/MSUIYCwRaD", host: "play.zcraftmc.xyz:11339" },
-  { name: "Minecraft.buzz", url: "https://minecraft.buzz/server/18736", host: "play.zcraftmc.xyz:11339" },
-  { name: "Minecraft-Server-List", url: "https://minecraft-server-list.com/server/517459/", host: "play.zcraftmc.xyz:11339" },
-  { name: "MinecraftServers.org", url: "https://minecraftservers.org/server/682813", host: "play.zcraftmc.xyz:11339" },
+  { name: "Minecraft-ServerList", url: "https://minecraft-serverlist.com/server/4150", host: "play.zcraftmc.xyz" },
+  { name: "FindMCServer", url: "https://findmcserver.com/server/MSUIYCwRaD", host: "play.zcraftmc.xyz" },
+  { name: "Minecraft.buzz", url: "https://minecraft.buzz/server/18736", host: "play.zcraftmc.xyz" },
+  { name: "Minecraft-Server-List", url: "https://minecraft-server-list.com/server/517459/", host: "play.zcraftmc.xyz" },
+  { name: "MinecraftServers.org", url: "https://minecraftservers.org/server/682813", host: "play.zcraftmc.xyz" },
 ];
 
 export default function ServerListings() {
@@ -52,7 +52,7 @@ export default function ServerListings() {
 
           {/* Live server status */}
           <div className="mb-6">
-            <ServerLiveCard host="play.zcraftmc.xyz:11339" />
+            <ServerLiveCard host="play.zcraftmc.xyz" />
           </div>
 
           <div className="mb-6 flex items-center gap-3">

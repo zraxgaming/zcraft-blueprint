@@ -1,14 +1,14 @@
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Monitor, Smartphone, ChevronRight } from "lucide-react";
+import { Copy, Check, Monitor, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import ServerLiveCard from "@/components/server/ServerLiveCard";
 const steps = [
   {
     number: 1,
     title: "Launch Minecraft",
-    description: "Open Minecraft Java Edition or Bedrock Edition on your device.",
+    description: "Open Minecraft Java Edition on your device.",
   },
   {
     number: 2,
@@ -24,33 +24,25 @@ const steps = [
 
 export default function PlayPage() {
   const [copiedJava, setCopiedJava] = useState(false);
-  const [copiedBedrock, setCopiedBedrock] = useState(false);
   const JAVA_IP = "play.zcraftmc.xyz";
-  const JAVA_PORT = "11339";
-  const BEDROCK_IP = "bedrock.zcraftmc.xyz";
-  const BEDROCK_PORT = "11339";
+  const JAVA_PORT = "25565";
 
-  const copyAddress = (type: "java" | "bedrock") => {
-    const address = type === "java" ? `${JAVA_IP}:${JAVA_PORT}` : `${BEDROCK_IP}:${BEDROCK_PORT}`;
+  const copyAddress = (type: "java") => {
+    const address = `${JAVA_IP}:${JAVA_PORT}`;
     navigator.clipboard.writeText(address);
-    if (type === "java") {
-      setCopiedJava(true);
-      setTimeout(() => setCopiedJava(false), 2000);
-    } else {
-      setCopiedBedrock(true);
-      setTimeout(() => setCopiedBedrock(false), 2000);
-    }
+    setCopiedJava(true);
+    setTimeout(() => setCopiedJava(false), 2000);
   };
 
   return (
     <Layout
       seo={{
         title: "Play ZCraft Network — Minecraft Server IP & How to Join",
-        description: "Get ZCraft Network server IP and join our premier Minecraft lifesteal SMP server. Java & Bedrock compatible with custom plugins, economy system, factions, and active community events.",
-        keywords: "zcraft server ip, minecraft server ip, play zcraft, join minecraft server, lifesteal server ip, minecraft java bedrock, zcraft network ip, minecraft smp server",
+        description: "Get ZCraft Network server IP and join our premier Minecraft lifesteal SMP server. Java compatible with custom plugins, economy system, factions, and active community events.",
+        keywords: "zcraft server ip, minecraft server ip, play zcraft, join minecraft server, lifesteal server ip, minecraft java, zcraft network ip, minecraft smp server",
         url: "/play",
         type: "website",
-        tags: ["minecraft server", "server ip", "java bedrock", "lifesteal", "smp"]
+        tags: ["minecraft server", "server ip", "java", "lifesteal", "smp"]
       }}
     >
       {/* Hero */}
@@ -62,7 +54,7 @@ export default function PlayPage() {
               How to <span className="text-gradient">Join</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Connect to ZCraft in seconds. We support both Java and Bedrock editions!
+              Connect to ZCraft in seconds. We support Java Edition!
             </p>
           </div>
         </div>
@@ -72,7 +64,7 @@ export default function PlayPage() {
       <section className="py-6">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto mb-6">
-            <ServerLiveCard host="play.zcraftmc.xyz:11339" />
+            <ServerLiveCard host="play.zcraftmc.xyz:25565" />
           </div>
         </div>
       </section>
@@ -80,7 +72,7 @@ export default function PlayPage() {
       {/* Edition Cards */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="max-w-2xl mx-auto">
             {/* Java Edition */}
             <Card className="card-hover border-0 bg-card relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
@@ -116,41 +108,6 @@ export default function PlayPage() {
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">Supported Versions</p>
                   <p className="font-semibold">1.8.x – 1.21.x</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Bedrock Edition */}
-            <Card className="card-hover border-0 bg-card relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl" />
-              <CardHeader className="relative">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-accent/10">
-                    <Smartphone className="h-7 w-7 text-accent" />
-                  </div>
-                  <div>
-                    <CardTitle className="font-display text-2xl">Bedrock Edition</CardTitle>
-                    <p className="text-sm text-muted-foreground">Mobile / Console / Windows 10+</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 relative">
-                <div className="p-4 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-1">Server Address</p>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                    <code className="font-mono text-lg font-semibold flex-1 break-all">{BEDROCK_IP}</code>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyAddress("bedrock")}
-                    >
-                      {copiedBedrock ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-1">Port</p>
-                  <p className="font-semibold">{BEDROCK_PORT}</p>
                 </div>
               </CardContent>
             </Card>

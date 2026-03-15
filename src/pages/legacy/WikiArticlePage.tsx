@@ -16,8 +16,7 @@ const wikiArticles = {
       <h2>Step 1: Connect to the Server</h2>
       <p>Add our server address to your Minecraft client:</p>
       <ul>
-        <li><strong>Java Edition:</strong> play.zcraftmc.xyz:11339</li>
-        <li><strong>Bedrock Edition:</strong> bedrock.zcraftmc.xyz:11339</li>
+        <li><strong>Java Edition:</strong> play.zcraftmc.xyz:25565</li>
       </ul>
       
       <h2>Step 2: Register Your Account</h2>

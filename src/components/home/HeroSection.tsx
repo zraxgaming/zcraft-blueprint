@@ -52,7 +52,7 @@ export function HeroSection() {
   }, []);
 
   const copyIP = () => {
-    navigator.clipboard.writeText("play.zcraftmc.xyz:11339");
+    navigator.clipboard.writeText("play.zcraftmc.xyz");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -162,7 +162,7 @@ export function HeroSection() {
                 ) : (
                   <Copy className="h-6 w-6" />
                 )}
-                play.zcraftmc.xyz:11339
+                play.zcraftmc.xyz
               </Button>
             </motion.div>
           </motion.div>

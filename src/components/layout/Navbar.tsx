@@ -33,7 +33,7 @@ export function Navbar() {
   };
 
   const copyIP = () => {
-    navigator.clipboard.writeText("play.zcraftmc.xyz:11339");
+    navigator.clipboard.writeText("play.zcraftmc.xyz");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -77,7 +77,7 @@ export function Navbar() {
                 aria-label={copied ? "IP copied to clipboard" : "Copy server IP address"}
               >
                 {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                play.zcraftmc.xyz:11339
+                play.zcraftmc.xyz
               </Button>
               <a
                 href="https://discord.z-craft.xyz"
